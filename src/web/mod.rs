@@ -2,7 +2,7 @@
 
 //! REST API specific messages.
 
-use serde::{Serialize};
+use serde::Serialize;
 
 /// Rest API response
 #[derive(Debug, Serialize)]

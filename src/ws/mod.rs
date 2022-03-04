@@ -33,7 +33,12 @@ pub struct WsMessage {
 }
 
 impl WsMessage {
-    pub fn event(msg: &str, cat: Option<EventCategory>, ts: Option<String>, msg_data: Value) -> Self {
+    pub fn event(
+        msg: &str,
+        cat: Option<EventCategory>,
+        ts: Option<String>,
+        msg_data: Value,
+    ) -> Self {
         Self {
             kind: Some("event".into()),
             msg: Some(msg.into()),
@@ -65,18 +70,16 @@ impl WsMessage {
                 ..Default::default()
             },
 
-            Err(_) => {
-                Self {
-                    kind: Some("resp".into()),
-                    req_id: Some(req_id),
-                    msg: Some("result".into()),
-                    code: Some(500),
-                    msg_data: Some(
-                        json!({ "code": "INTERNAL_ERROR", "message": "Error serializing result"}),
-                    ),
-                    ..Default::default()
-                }
-            }
+            Err(_) => Self {
+                kind: Some("resp".into()),
+                req_id: Some(req_id),
+                msg: Some("result".into()),
+                code: Some(500),
+                msg_data: Some(
+                    json!({ "code": "INTERNAL_ERROR", "message": "Error serializing result"}),
+                ),
+                ..Default::default()
+            },
         }
     }
 
@@ -136,17 +139,15 @@ impl WsResponse {
                 code: 200,
                 msg_data: Some(v),
             },
-            Err(_) => {
-                Self {
-                    kind: "resp".into(),
-                    req_id,
-                    msg: "result".into(),
-                    code: 500,
-                    msg_data: Some(
-                        json!({ "code": "INTERNAL_ERROR", "message": "Error serializing result"}),
-                    ),
-                }
-            }
+            Err(_) => Self {
+                kind: "resp".into(),
+                req_id,
+                msg: "result".into(),
+                code: 500,
+                msg_data: Some(
+                    json!({ "code": "INTERNAL_ERROR", "message": "Error serializing result"}),
+                ),
+            },
         }
     }
 

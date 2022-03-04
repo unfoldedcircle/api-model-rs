@@ -25,5 +25,5 @@
 pub use integration::*;
 
 mod integration;
-pub mod ws;
 pub mod web;
+pub mod ws;

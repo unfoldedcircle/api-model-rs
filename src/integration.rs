@@ -61,7 +61,7 @@ pub struct EntityCommand {
 ///
 /// Variants will be serialized in `snake_case`.
 #[derive(
-Debug, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+    Debug, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
