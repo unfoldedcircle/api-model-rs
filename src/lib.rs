@@ -22,6 +22,9 @@
 //! - Core OpenAPI
 //!
 
+#![forbid(non_ascii_idents)]
+#![deny(unsafe_code)]
+
 pub use integration::*;
 
 mod integration;
