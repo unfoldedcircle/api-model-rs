@@ -13,3 +13,12 @@ pub struct ApiResponse<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<&'a str>,
 }
+
+impl<'a> ApiResponse<'a> {
+    pub fn new(code: &'a str, message: &'a str) -> ApiResponse<'a> {
+        ApiResponse {
+            code: Some(code),
+            message: Some(message),
+        }
+    }
+}
