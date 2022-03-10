@@ -6,6 +6,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use serde_with::skip_serializing_none;
 
+/// WebSocket authentication type.
+#[derive(PartialEq)]
+pub enum WsAuthentication {
+    /// Authenticate with header token.
+    HeaderToken,
+    /// Authenticate with authentication message.
+    AuthMessage,
+}
+
 /// Generic message definition for requests, responses and events.
 ///
 /// This message structure is for best effort parsing. See [`WsRequest`] and [`WsResponse`] for
@@ -196,7 +205,7 @@ pub struct WsError {
 /// Event message categories.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventCategory {
     Device,
