@@ -27,9 +27,23 @@ pub struct SubscribeEvents {
     pub entity_ids: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Validate)]
+/// Minimal integration driver information.
+///
+/// This data structure is intended for driver overview pages.
+#[derive(Debug, Deserialize, Serialize)]
 #[skip_serializing_none]
 pub struct IntegrationDriver {
+    pub driver_id: String,
+    pub friendly_name: String,
+    pub driver_url: String,
+    pub version: String,
+    pub icon: Option<String>,
+}
+
+/// Detailed integration driver data.
+#[derive(Debug, Deserialize, Serialize, Validate)]
+#[skip_serializing_none]
+pub struct IntegrationDriverDetail {
     #[validate(length(
         min = 1,
         max = 50,
