@@ -25,8 +25,13 @@
 #![forbid(non_ascii_idents)]
 #![deny(unsafe_code)]
 
+#[macro_use]
+extern crate validator_derive;
+
+pub use entity::*;
 pub use integration::*;
 
+mod entity;
 mod integration;
 pub mod web;
 pub mod ws;
