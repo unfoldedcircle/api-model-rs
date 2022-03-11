@@ -32,7 +32,7 @@ pub struct SubscribeEvents {
 /// This data structure is intended for driver overview pages.
 #[derive(Debug, Deserialize, Serialize)]
 #[skip_serializing_none]
-pub struct IntegrationDriver {
+pub struct IntegrationDriverInfo {
     pub driver_id: String,
     pub friendly_name: String,
     pub driver_url: String,
@@ -40,39 +40,114 @@ pub struct IntegrationDriver {
     pub icon: Option<String>,
 }
 
-/// Detailed integration driver data.
-#[derive(Debug, Deserialize, Serialize, Validate)]
+/// Integration driver model.
+#[derive(Debug, Deserialize, Serialize)]
 #[skip_serializing_none]
-pub struct IntegrationDriverDetail {
-    #[validate(length(
-        min = 1,
-        max = 50,
-        code = "INVALID_LENGTH",
-        message = "Invalid length (min = 1, max = 50)"
-    ))]
+pub struct IntegrationDriver {
     pub driver_id: String,
-    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
     pub friendly_name: String,
     pub driver_url: String,
     pub auth_method: Option<String>,
     pub version: String,
     pub min_core_api: Option<String>,
-    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub icon: Option<String>,
     pub description: Option<String>,
     pub developer: Option<DriverDeveloper>,
     pub home_page: Option<String>,
-    pub device_discovery: Option<bool>,
+    pub device_discovery: bool,
     pub setup_data_schema: Option<serde_json::Map<String, Value>>,
+    // TODO use chrono crate?!
     pub release_date: String,
 }
 
+/// Integration driver update model.
+///
+/// This is a dedicated model related to [`IntegrationDriver`] for create and patch update
+/// operations with field validations.
+/// The create operation will check required fields in the original model.
+#[derive(Debug, Deserialize, Serialize, Validate)]
+#[skip_serializing_none]
+pub struct IntegrationDriverUpdate {
+    #[validate(length(
+        min = 1,
+        max = 36,
+        code = "INVALID_LENGTH",
+        message = "Invalid length (min = 1, max = 50)"
+    ))]
+    pub driver_id: Option<String>,
+    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
+    pub friendly_name: Option<String>,
+    #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
+    pub driver_url: Option<String>,
+    #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
+    pub auth_method: Option<String>,
+    #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
+    pub version: Option<String>,
+    #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
+    pub min_core_api: Option<String>,
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub icon: Option<String>,
+    #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
+    pub description: Option<String>,
+    pub developer: Option<DriverDeveloper>,
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub home_page: Option<String>,
+    pub device_discovery: Option<bool>,
+    pub setup_data_schema: Option<serde_json::Map<String, Value>>,
+    // TODO use chrono crate?!
+    pub release_date: Option<String>,
+}
+
+/// Developer information for an integration driver.
 #[derive(Debug, Deserialize, Serialize, Validate)]
 #[skip_serializing_none]
 pub struct DriverDeveloper {
+    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
     pub name: Option<String>,
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub url: Option<String>,
+    #[validate(length(max = 100, message = "Invalid length (max = 100)"))]
     pub email: Option<String>,
+}
+
+/// Integration instance model.
+#[derive(Debug, Deserialize, Serialize)]
+#[skip_serializing_none]
+pub struct Integration {
+    pub integration_id: String,
+    pub driver_id: String,
+    pub friendly_name: String,
+    pub icon: Option<String>,
+    pub enabled: bool,
+}
+
+/// Integration instance update model.
+///
+/// This is a dedicated model related to [`Integration`] for create and patch update
+/// operations with field validations.
+/// The create operation will check required fields in the original model.
+#[derive(Debug, Deserialize, Serialize, Validate)]
+#[skip_serializing_none]
+pub struct IntegrationUpdate {
+    #[validate(length(
+        min = 1,
+        max = 36,
+        code = "INVALID_LENGTH",
+        message = "Invalid length (min = 1, max = 36)"
+    ))]
+    pub integration_id: Option<String>,
+    #[validate(length(
+        min = 1,
+        max = 36,
+        code = "INVALID_LENGTH",
+        message = "Invalid length (min = 1, max = 50)"
+    ))]
+    pub driver_id: Option<String>,
+    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
+    pub friendly_name: Option<String>,
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub icon: Option<String>,
+    pub enabled: Option<bool>,
 }
 
 /// Integration device states.
