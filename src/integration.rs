@@ -2,9 +2,13 @@
 
 //! Integration related data structures.
 
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
+#[cfg(feature = "sqlx")]
+use sqlx::types::Json;
+use validator::Validate;
 
 /// Integration driver version information.
 #[derive(Debug, Serialize)]
@@ -27,11 +31,24 @@ pub struct SubscribeEvents {
     pub entity_ids: Vec<String>,
 }
 
+/// Integration status information.
+///
+/// Provides integration instance information.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct IntegrationStatus {
+    pub integration_id: String,
+    pub friendly_name: String,
+    pub icon: Option<String>,
+    //pub state: DeviceState,
+    pub enabled: bool,
+}
+
 /// Minimal integration driver information.
 ///
 /// This data structure is intended for driver overview pages.
-#[derive(Debug, Deserialize, Serialize)]
 #[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationDriverInfo {
     pub driver_id: String,
     pub friendly_name: String,
@@ -41,23 +58,40 @@ pub struct IntegrationDriverInfo {
 }
 
 /// Integration driver model.
-#[derive(Debug, Deserialize, Serialize)]
 #[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationDriver {
+    /// Unique driver identifier. Either provided by the user, otherwise a generated UUID.
     pub driver_id: String,
+    /// Name of the driver to display in the UI.
     pub friendly_name: String,
+    /// WebSocket URL of the integration driver.
     pub driver_url: String,
+    /// Optional driver authentication token.
+    ///
+    /// Note: the token will not be returned to external clients!
+    pub token: Option<String>,
+    /// Authentication method if token is used.
     pub auth_method: Option<String>,
+    /// Driver version, [SemVer](https://semver.org/) preferred.
     pub version: String,
+    /// Optional version check: minimum required core API version in the remote.
     pub min_core_api: Option<String>,
     pub icon: Option<String>,
+    /// Optional description of the integration.
     pub description: Option<String>,
+    /// Optional information about the integration developer or company.
     pub developer: Option<DriverDeveloper>,
+    /// Optional home page url for more information.
     pub home_page: Option<String>,
+    /// Driver supports multi device discovery.
     pub device_discovery: bool,
-    pub setup_data_schema: Option<serde_json::Map<String, Value>>,
-    // TODO use chrono crate?!
-    pub release_date: String,
+    #[cfg(feature = "sqlx")]
+    pub setup_data_schema: Json<serde_json::Value>,
+    #[cfg(not(feature = "sqlx"))]
+    pub setup_data_schema: Option<serde_json::Value>,
+    /// Release date of the driver.
+    pub release_date: Option<NaiveDate>,
 }
 
 /// Integration driver update model.
@@ -65,8 +99,8 @@ pub struct IntegrationDriver {
 /// This is a dedicated model related to [`IntegrationDriver`] for create and patch update
 /// operations with field validations.
 /// The create operation will check required fields in the original model.
-#[derive(Debug, Deserialize, Serialize, Validate)]
 #[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct IntegrationDriverUpdate {
     #[validate(length(
         min = 1,
@@ -77,8 +111,11 @@ pub struct IntegrationDriverUpdate {
     pub driver_id: Option<String>,
     #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
     pub friendly_name: Option<String>,
+    #[validate(url)]
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub driver_url: Option<String>,
+    #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
+    pub token: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
     pub auth_method: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
@@ -89,18 +126,22 @@ pub struct IntegrationDriverUpdate {
     pub icon: Option<String>,
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub description: Option<String>,
+    #[validate]
     pub developer: Option<DriverDeveloper>,
+    #[validate(url)]
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub home_page: Option<String>,
     pub device_discovery: Option<bool>,
-    pub setup_data_schema: Option<serde_json::Map<String, Value>>,
-    // TODO use chrono crate?!
-    pub release_date: Option<String>,
+    #[cfg(feature = "sqlx")]
+    pub setup_data_schema: Option<Json<serde_json::Value>>,
+    #[cfg(not(feature = "sqlx"))]
+    pub setup_data_schema: Option<serde_json::Value>,
+    pub release_date: Option<NaiveDate>,
 }
 
 /// Developer information for an integration driver.
-#[derive(Debug, Deserialize, Serialize, Validate)]
 #[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct DriverDeveloper {
     #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
     pub name: Option<String>,
@@ -110,24 +151,13 @@ pub struct DriverDeveloper {
     pub email: Option<String>,
 }
 
-/// Integration instance model.
-#[derive(Debug, Deserialize, Serialize)]
-#[skip_serializing_none]
-pub struct Integration {
-    pub integration_id: String,
-    pub driver_id: String,
-    pub friendly_name: String,
-    pub icon: Option<String>,
-    pub enabled: bool,
-}
-
 /// Integration instance update model.
 ///
 /// This is a dedicated model related to [`Integration`] for create and patch update
 /// operations with field validations.
 /// The create operation will check required fields in the original model.
-#[derive(Debug, Deserialize, Serialize, Validate)]
 #[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct IntegrationUpdate {
     #[validate(length(
         min = 1,
@@ -148,12 +178,35 @@ pub struct IntegrationUpdate {
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
+    #[cfg(feature = "sqlx")]
+    pub setup_data: Option<Json<serde_json::Map<String, Value>>>,
+    #[cfg(not(feature = "sqlx"))]
+    pub setup_data: Option<serde_json::Map<String, Value>>,
+}
+
+/// Integration instance model.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Integration {
+    pub integration_id: String,
+    pub driver_id: String,
+    pub friendly_name: String,
+    pub icon: Option<String>,
+    pub enabled: bool,
+    #[cfg(feature = "sqlx")]
+    pub setup_data: Json<serde_json::Map<String, Value>>,
+    #[cfg(not(feature = "sqlx"))]
+    pub setup_data: Option<serde_json::Map<String, Value>>,
 }
 
 /// Integration device states.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+// TODO do we need numeric representation?
+#[derive(
+    Debug, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DeviceState {
     Connecting,

@@ -22,6 +22,10 @@
 //! - Core OpenAPI
 //!
 
+// Note: unfortunately the validator crate doesn't allow to use variables or constants for repeating
+// message texts: <https://github.com/Keats/validator/issues/142>. Therefore the text length
+// messages are duplicated all over...
+
 #![forbid(non_ascii_idents)]
 #![deny(unsafe_code)]
 
