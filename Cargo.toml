@@ -25,13 +25,10 @@ validator = "0.14"
 validator_derive = "0.14"
 
 [dependencies.sqlx]
-version = "0.5.11"
+version = "0.5"
 default-features = false
 features = [
     "chrono",
     "json",
 ]
 optional = true
-
-[features]
-sqlx_types = ["sqlx"]

@@ -40,7 +40,7 @@ pub struct IntegrationStatus {
     pub integration_id: String,
     pub friendly_name: String,
     pub icon: Option<String>,
-    //pub state: DeviceState,
+    pub state: DeviceState,
     pub enabled: bool,
 }
 
@@ -71,8 +71,6 @@ pub struct IntegrationDriver {
     ///
     /// Note: the token will not be returned to external clients!
     pub token: Option<String>,
-    /// Authentication method if token is used.
-    pub auth_method: Option<String>,
     /// Driver version, [SemVer](https://semver.org/) preferred.
     pub version: String,
     /// Optional version check: minimum required core API version in the remote.
@@ -89,7 +87,7 @@ pub struct IntegrationDriver {
     #[cfg(feature = "sqlx")]
     pub setup_data_schema: Json<serde_json::Value>,
     #[cfg(not(feature = "sqlx"))]
-    pub setup_data_schema: Option<serde_json::Value>,
+    pub setup_data_schema: serde_json::Value,
     /// Release date of the driver.
     pub release_date: Option<NaiveDate>,
 }
@@ -116,8 +114,6 @@ pub struct IntegrationDriverUpdate {
     pub driver_url: Option<String>,
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub token: Option<String>,
-    #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
-    pub auth_method: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
     pub version: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
@@ -196,18 +192,19 @@ pub struct Integration {
     #[cfg(feature = "sqlx")]
     pub setup_data: Json<serde_json::Map<String, Value>>,
     #[cfg(not(feature = "sqlx"))]
-    pub setup_data: Option<serde_json::Map<String, Value>>,
+    pub setup_data: serde_json::Map<String, Value>,
 }
 
 /// Integration device states.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
-// TODO do we need numeric representation?
 #[derive(
-    Debug, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
 )]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
 pub enum DeviceState {
     Connecting,
     Connected,

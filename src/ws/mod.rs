@@ -6,15 +6,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use serde_with::skip_serializing_none;
 
-/// WebSocket authentication type.
-#[derive(PartialEq)]
-pub enum WsAuthentication {
-    /// Authenticate with header token.
-    HeaderToken,
-    /// Authenticate with authentication message.
-    AuthMessage,
-}
-
 /// Generic message definition for requests, responses and events.
 ///
 /// This message structure is for best effort parsing. See [`WsRequest`] and [`WsResponse`] for
@@ -167,7 +158,7 @@ impl WsResponse {
             msg: "result".into(),
             code,
             msg_data: Some(
-                serde_json::to_value(msg_data).expect("Error serializing model::Error struct"),
+                serde_json::to_value(msg_data).expect("Error serializing WsError struct"),
             ),
         }
     }
