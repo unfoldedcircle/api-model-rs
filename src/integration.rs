@@ -10,6 +10,8 @@ use serde_with::skip_serializing_none;
 use sqlx::types::Json;
 use validator::Validate;
 
+use crate::ws::WsAuthentication;
+
 /// Integration driver version information.
 #[derive(Debug, Serialize)]
 pub struct IntegrationVersion {
@@ -71,6 +73,8 @@ pub struct IntegrationDriver {
     ///
     /// Note: the token will not be returned to external clients!
     pub token: Option<String>,
+    /// Authentication method if token is used.
+    pub auth_method: Option<WsAuthentication>,
     /// Driver version, [SemVer](https://semver.org/) preferred.
     pub version: String,
     /// Optional version check: minimum required core API version in the remote.
@@ -114,6 +118,7 @@ pub struct IntegrationDriverUpdate {
     pub driver_url: Option<String>,
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub token: Option<String>,
+    pub auth_method: Option<WsAuthentication>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
     pub version: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]

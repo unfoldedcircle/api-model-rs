@@ -6,6 +6,21 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use serde_with::skip_serializing_none;
 
+/// WebSocket authentication type.
+#[derive(
+    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
+pub enum WsAuthentication {
+    /// Authenticate with header token.
+    Header,
+    /// Authenticate with authentication message.
+    Message,
+}
+
 /// Generic message definition for requests, responses and events.
 ///
 /// This message structure is for best effort parsing. See [`WsRequest`] and [`WsResponse`] for
