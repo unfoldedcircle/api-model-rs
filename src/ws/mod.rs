@@ -2,9 +2,11 @@
 
 //! WebSocket specific messages.
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use serde_with::skip_serializing_none;
+use std::collections::HashMap;
 
 /// WebSocket authentication type.
 #[derive(
@@ -41,24 +43,21 @@ pub struct WsMessage {
     /// Event message only: category of the event.
     pub cat: Option<EventCategory>,
     /// Event message only: optional timestamp when the event was generated.
-    // TODO is there a native time format we could use without depending on the time crate?
-    pub ts: Option<String>,
+    pub ts: Option<DateTime<Utc>>,
     /// Message payload.
     pub msg_data: Option<Value>,
+    /// Extra fields
+    #[serde(flatten)]
+    pub extra: HashMap<String, Value>,
 }
 
 impl WsMessage {
-    pub fn event(
-        msg: &str,
-        cat: Option<EventCategory>,
-        ts: Option<String>,
-        msg_data: Value,
-    ) -> Self {
+    pub fn event(msg: &str, cat: Option<EventCategory>, msg_data: Value) -> Self {
         Self {
             kind: Some("event".into()),
             msg: Some(msg.into()),
             cat,
-            ts,
+            ts: Some(Utc::now()),
             msg_data: Some(msg_data),
             ..Default::default()
         }
@@ -217,4 +216,38 @@ pub enum EventCategory {
     Device,
     Entity,
     Remote,
+}
+
+/// Events emitted from the Remote Two
+#[derive(
+    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+)]
+#[strum(serialize_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub enum R2Event {
+    Connect,
+    Disconnect,
+    EnterStandby,
+    ExitStandby,
+    StartDiscovery,
+    StopDiscovery,
+    AbortDeviceSetup,
+}
+
+/// Events emitted from the integration driver
+#[derive(
+    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+)]
+#[strum(serialize_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub enum DriverEvent {
+    AuthRequired,
+    DeviceState,
+    DeviceSetupProgress,
+    AbortDeviceSetup,
+    EntityChange,
+    EntityAvailable,
+    EntityRemoved,
+    DiscoveredDevice,
+    DiscoveryFinished,
 }

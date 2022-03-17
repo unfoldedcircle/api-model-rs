@@ -10,6 +10,9 @@
 //! The model is also being used in the remote-core implementation to make sure it is up-to-date
 //! with the API specifications.
 //!
+//! Note: the defined structs are as simple as possible in terms of lifetimes and not optimized for
+//! Serde zero-copy deserialization. More information: <https://serde.rs/lifetimes.html>
+//!
 //! ## API Specifications
 //!
 //! _TODO add links once published on GitHub_

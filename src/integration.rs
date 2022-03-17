@@ -8,6 +8,7 @@ use serde_json::Value;
 use serde_with::skip_serializing_none;
 #[cfg(feature = "sqlx")]
 use sqlx::types::Json;
+use std::collections::HashMap;
 use validator::Validate;
 
 use crate::ws::WsAuthentication;
@@ -42,7 +43,11 @@ pub struct IntegrationStatus {
     pub integration_id: String,
     pub friendly_name: String,
     pub icon: Option<String>,
+    /// Device state. This is the last known state of the device.
     pub state: DeviceState,
+    // TODO Integration driver state?
+    // pub driver_state: DeviceState,
+    /// Integration is enabled
     pub enabled: bool,
 }
 
@@ -60,10 +65,22 @@ pub struct IntegrationDriverInfo {
 }
 
 /// Integration driver model.
+///
+/// A driver represents the communication aspect of an integration. E.g. how one can connect to it
+/// and which API version it supports.
+///
+/// One driver can provide multiple [`Integration`] instances. In the integration API they are
+/// referred to as `multi-device integrations` and use the optional `device_id` property where
+/// required. If a driver only provides a single instance, which is usually the default use case,
+/// then the `device_id` is not used (or set to the default value `main`).
+///
+/// **Attention:** For now this is just a 1:1 relationship until the multi-device setup is finalized
+/// in the API!
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationDriver {
-    /// Unique driver identifier. Either provided by the user, otherwise a generated UUID.
+    /// Unique driver identifier.  
+    /// Provided by the user or during driver registration. Otherwise a generated UUID.
     pub driver_id: String,
     /// Name of the driver to display in the UI.
     pub friendly_name: String,
@@ -86,8 +103,10 @@ pub struct IntegrationDriver {
     pub developer: Option<DriverDeveloper>,
     /// Optional home page url for more information.
     pub home_page: Option<String>,
-    /// Driver supports multi device discovery.
+    /// Driver supports multi-device discovery. **Not yet supported**.
     pub device_discovery: bool,
+    /// Driver configuration metadata describing configuration parameters for the web-configurator.
+    /// **Not yet finalized**.
     #[cfg(feature = "sqlx")]
     pub setup_data_schema: Json<serde_json::Value>,
     #[cfg(not(feature = "sqlx"))]
@@ -152,6 +171,27 @@ pub struct DriverDeveloper {
     pub email: Option<String>,
 }
 
+/// Integration instance model.
+///
+/// An integration instance represents a configured integration driver.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Integration {
+    /// Unique integration identifier.  
+    /// Provided by the user or during driver registration. Otherwise a generated UUID.
+    pub integration_id: String,
+    /// The required integration driver. References ['IntegrationDriver'].
+    pub driver_id: String,
+    pub friendly_name: String,
+    pub icon: Option<String>,
+    pub enabled: bool,
+    /// Optional configuration data if supported or required by the driver.
+    #[cfg(feature = "sqlx")]
+    pub setup_data: Json<serde_json::Map<String, Value>>,
+    #[cfg(not(feature = "sqlx"))]
+    pub setup_data: serde_json::Map<String, Value>,
+}
+
 /// Integration instance update model.
 ///
 /// This is a dedicated model related to [`Integration`] for create and patch update
@@ -185,21 +225,6 @@ pub struct IntegrationUpdate {
     pub setup_data: Option<serde_json::Map<String, Value>>,
 }
 
-/// Integration instance model.
-#[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Integration {
-    pub integration_id: String,
-    pub driver_id: String,
-    pub friendly_name: String,
-    pub icon: Option<String>,
-    pub enabled: bool,
-    #[cfg(feature = "sqlx")]
-    pub setup_data: Json<serde_json::Map<String, Value>>,
-    #[cfg(not(feature = "sqlx"))]
-    pub setup_data: serde_json::Map<String, Value>,
-}
-
 /// Integration device states.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
@@ -215,4 +240,51 @@ pub enum DeviceState {
     Connected,
     Disconnected,
     Error,
+}
+
+/// Payload data of a `device_state` event message in `msg_data` property.  
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DeviceStateMsgData {
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
+    pub state: DeviceState,
+}
+
+/// Payload data of `entity_change` event message in `msg_data` property.  
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct EntityChangeMsgData {
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
+    pub entity_type: String,
+    pub entity_id: String,
+    pub attributes: Option<serde_json::Map<String, Value>>, // TODO map sufficient or better use a generic serde_json::Value?
+}
+
+/// Payload data of `entity_available` event message in `msg_data` property.
+///
+/// This is an optional event and not yet implemented in the core.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct EntityAvailableMsgData {
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
+    pub entity_type: String,
+    pub entity_id: String,
+    pub features: Option<Vec<String>>,
+    pub friendly_name: HashMap<String, String>,
+    pub area: Option<String>,
+}
+
+/// Payload data of `entity_removed` event message in `msg_data` property.
+///  
+/// This is an optional event and not yet implemented in the core.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct EntityRemovedMsgData {
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
+    pub entity_type: String,
+    pub entity_id: String,
 }
