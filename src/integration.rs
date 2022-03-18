@@ -182,6 +182,8 @@ pub struct Integration {
     pub integration_id: String,
     /// The required integration driver. References ['IntegrationDriver'].
     pub driver_id: String,
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
     pub friendly_name: String,
     pub icon: Option<String>,
     pub enabled: bool,
@@ -213,7 +215,12 @@ pub struct IntegrationUpdate {
         code = "INVALID_LENGTH",
         message = "Invalid length (min = 1, max = 50)"
     ))]
+    /// The required integration driver. References ['IntegrationDriver'].
+    /// This field cannot be updated
     pub driver_id: Option<String>,
+    /// Only required for multi-device integrations.
+    /// This field cannot be updated.
+    pub device_id: Option<String>,
     #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
     pub friendly_name: Option<String>,
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]

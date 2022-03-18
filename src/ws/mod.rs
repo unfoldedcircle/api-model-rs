@@ -2,11 +2,14 @@
 
 //! WebSocket specific messages.
 
+use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use serde_with::skip_serializing_none;
-use std::collections::HashMap;
+
+pub mod intg;
 
 /// WebSocket authentication type.
 #[derive(
@@ -216,38 +219,4 @@ pub enum EventCategory {
     Device,
     Entity,
     Remote,
-}
-
-/// Events emitted from the Remote Two
-#[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
-)]
-#[strum(serialize_all = "snake_case")]
-#[serde(rename_all = "snake_case")]
-pub enum R2Event {
-    Connect,
-    Disconnect,
-    EnterStandby,
-    ExitStandby,
-    StartDiscovery,
-    StopDiscovery,
-    AbortDeviceSetup,
-}
-
-/// Events emitted from the integration driver
-#[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
-)]
-#[strum(serialize_all = "snake_case")]
-#[serde(rename_all = "snake_case")]
-pub enum DriverEvent {
-    AuthRequired,
-    DeviceState,
-    DeviceSetupProgress,
-    AbortDeviceSetup,
-    EntityChange,
-    EntityAvailable,
-    EntityRemoved,
-    DiscoveredDevice,
-    DiscoveryFinished,
 }
