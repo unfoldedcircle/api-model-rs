@@ -62,6 +62,7 @@ pub struct IntegrationDriverInfo {
     pub driver_url: String,
     pub version: String,
     pub icon: Option<String>,
+    pub enabled: bool,
 }
 
 /// Integration driver model.
@@ -97,6 +98,9 @@ pub struct IntegrationDriver {
     /// Optional version check: minimum required core API version in the remote.
     pub min_core_api: Option<String>,
     pub icon: Option<String>,
+    /// Enables or disables driver communication.
+    /// If disabled, all integration instances won't be activated, even if the instance is enabled.
+    pub enabled: bool,
     /// Optional description of the integration.
     pub description: Option<String>,
     /// Optional information about the integration developer or company.
@@ -144,6 +148,7 @@ pub struct IntegrationDriverUpdate {
     pub min_core_api: Option<String>,
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub icon: Option<String>,
+    pub enabled: Option<bool>,
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub description: Option<String>,
     #[validate]
