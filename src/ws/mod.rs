@@ -13,7 +13,14 @@ pub mod intg;
 
 /// WebSocket authentication type.
 #[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+    Debug,
+    Clone,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    PartialEq,
+    Serialize,
+    Deserialize,
 )]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
@@ -129,6 +136,22 @@ pub struct WsRequest {
     pub msg_data: Option<Value>,
 }
 
+impl WsRequest {
+    pub fn new<T: serde::Serialize>(
+        id: u32,
+        msg: &str,
+        msg_data: T,
+    ) -> Result<Self, serde_json::Error> {
+        let msg_data = serde_json::to_value(msg_data)?;
+        Ok(Self {
+            kind: "req".into(),
+            id,
+            msg: msg.into(),
+            msg_data: Some(msg_data),
+        })
+    }
+}
+
 /// Common response message.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct WsResponse {
@@ -189,6 +212,16 @@ impl WsResponse {
             msg_data: Some(
                 json!({ "code": "BAD_REQUEST", "message": format!("Missing field: {}", field)}),
             ),
+        }
+    }
+
+    pub fn not_found(req_id: u32, message: String) -> Self {
+        Self {
+            kind: "resp".into(),
+            req_id,
+            msg: "result".into(),
+            code: 404,
+            msg_data: Some(json!({ "code": "NOT_FOUND", "message": message})),
         }
     }
 
