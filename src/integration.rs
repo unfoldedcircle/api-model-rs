@@ -301,3 +301,18 @@ pub struct EntityRemovedMsgData {
     pub entity_type: EntityType,
     pub entity_id: String,
 }
+
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AvailableEntitiesFilter {
+    pub device_id: Option<String>,
+    pub entity_type: Option<EntityType>,
+}
+
+/// Payload data of `available_entities` response message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AvailableEntitiesMsgData {
+    pub filter: Option<AvailableEntitiesFilter>,
+    pub available_entities: Vec<AvailableEntity>,
+}
