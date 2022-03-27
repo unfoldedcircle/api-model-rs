@@ -2,6 +2,7 @@
 
 //! Integration related data structures.
 
+use crate::{AvailableEntity, EntityType};
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -269,7 +270,7 @@ pub struct DeviceStateMsgData {
 pub struct EntityChangeMsgData {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
-    pub entity_type: String,
+    pub entity_type: EntityType,
     pub entity_id: String,
     pub attributes: Option<serde_json::Map<String, Value>>, // TODO map sufficient or better use a generic serde_json::Value?
 }
@@ -282,7 +283,7 @@ pub struct EntityChangeMsgData {
 pub struct EntityAvailableMsgData {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
-    pub entity_type: String,
+    pub entity_type: EntityType,
     pub entity_id: String,
     pub features: Option<Vec<String>>,
     pub friendly_name: HashMap<String, String>,
@@ -297,6 +298,6 @@ pub struct EntityAvailableMsgData {
 pub struct EntityRemovedMsgData {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
-    pub entity_type: String,
+    pub entity_type: EntityType,
     pub entity_id: String,
 }
