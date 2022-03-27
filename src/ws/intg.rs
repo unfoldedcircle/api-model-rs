@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 #[derive(
     Debug,
     Clone,
+    strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumMessage,
     strum_macros::EnumString,
@@ -22,7 +23,7 @@ use serde::{Deserialize, Serialize};
 pub enum R2Request {
     #[strum(message = "driver_version")]
     GetDriverVersion,
-    #[strum(message = "device_state")]
+    // returns an event instead of a response message
     GetDeviceState,
     #[strum(message = "device_setup_complete")]
     SetupDevice,
@@ -40,7 +41,14 @@ pub enum R2Request {
 
 /// Remote Two response messages for the integration driver.
 #[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+    Debug,
+    Clone,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    PartialEq,
+    Serialize,
+    Deserialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
@@ -54,7 +62,14 @@ pub enum R2Response {
 
 /// Integration specific events emitted from Remote Two
 #[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+    Debug,
+    Clone,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    PartialEq,
+    Serialize,
+    Deserialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
@@ -68,9 +83,36 @@ pub enum R2Event {
     AbortDeviceSetup,
 }
 
+/// Integration driver response messages.
+#[derive(
+    Debug,
+    Clone,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    PartialEq,
+    Serialize,
+    Deserialize,
+)]
+#[strum(serialize_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub enum DriverResponse {
+    DriverVersion,
+    DeviceSetupComplete,
+    AvailableEntities,
+    EntityStates,
+}
+
 /// Events emitted from the integration driver
 #[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+    Debug,
+    Clone,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumString,
+    PartialEq,
+    Serialize,
+    Deserialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
