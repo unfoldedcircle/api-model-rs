@@ -35,6 +35,7 @@ pub struct EntityCommand {
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
+    strum_macros::EnumVariantNames,
     PartialEq,
     Serialize,
     Deserialize,
@@ -54,7 +55,13 @@ pub enum EntityType {
 /// Switch entity commands.
 ///
 /// Variants will be serialized in `snake_case`.
-#[derive(strum_macros::AsRefStr, strum_macros::EnumString, PartialEq, Deserialize)]
+#[derive(
+    strum_macros::AsRefStr,
+    strum_macros::EnumString,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Deserialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum SwitchCommand {
@@ -66,7 +73,13 @@ pub enum SwitchCommand {
 /// Climate entity commands.
 ///
 /// Variants will be serialized in `snake_case`.
-#[derive(strum_macros::AsRefStr, strum_macros::EnumString, PartialEq, Deserialize)]
+#[derive(
+    strum_macros::AsRefStr,
+    strum_macros::EnumString,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Deserialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum ClimateCommand {
@@ -81,7 +94,13 @@ pub enum ClimateCommand {
 /// Cover entity commands.
 ///
 /// Variants will be serialized in `snake_case`.
-#[derive(strum_macros::AsRefStr, strum_macros::EnumString, PartialEq, Deserialize)]
+#[derive(
+    strum_macros::AsRefStr,
+    strum_macros::EnumString,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Deserialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum CoverCommand {
@@ -94,7 +113,13 @@ pub enum CoverCommand {
 /// Light entity commands.
 ///
 /// Variants will be serialized in `snake_case`.
-#[derive(strum_macros::AsRefStr, strum_macros::EnumString, PartialEq, Deserialize)]
+#[derive(
+    strum_macros::AsRefStr,
+    strum_macros::EnumString,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Deserialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum LightCommand {
@@ -106,7 +131,13 @@ pub enum LightCommand {
 /// Media player entity commands.
 ///
 /// Variants will be serialized in `snake_case`.
-#[derive(strum_macros::AsRefStr, strum_macros::EnumString, PartialEq, Deserialize)]
+#[derive(
+    strum_macros::AsRefStr,
+    strum_macros::EnumString,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Deserialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum MediaPlayerCommand {
@@ -170,6 +201,7 @@ pub struct AvailableEntity {
     pub friendly_name: HashMap<String, String>,
     /// Supported features of the entity. See entity documentation for available features.
     pub features: Option<Vec<String>>,
+    /// Optional area if supported by the integration. E.g. `Living room`.
     pub area: Option<String>,
     /// Optional entity options. See entity documentation for available options.
     pub options: Option<serde_json::Map<String, Value>>,
@@ -179,7 +211,14 @@ pub struct AvailableEntity {
 ///
 /// Variants will be serialized in `snake_case`.
 /// See API documentation for more information.
-#[derive(Debug, strum_macros::AsRefStr, strum_macros::Display, PartialEq, Serialize)]
+#[derive(
+    Debug,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Serialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum SwitchDeviceClass {
@@ -191,7 +230,14 @@ pub enum SwitchDeviceClass {
 ///
 /// Variants will be serialized in `snake_case`.
 /// See API documentation for more information.
-#[derive(Debug, strum_macros::AsRefStr, strum_macros::Display, PartialEq, Serialize)]
+#[derive(
+    Debug,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Serialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum ClimateFeature {
@@ -208,7 +254,14 @@ pub enum ClimateFeature {
 ///
 /// Variants will be serialized in `snake_case`.
 /// See API documentation for more information.
-#[derive(Debug, strum_macros::AsRefStr, strum_macros::Display, PartialEq, Serialize)]
+#[derive(
+    Debug,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Serialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum ClimateOption {
@@ -223,7 +276,14 @@ pub enum ClimateOption {
 ///
 /// Variants will be serialized in `snake_case`.
 /// See API documentation for more information.
-#[derive(Debug, strum_macros::AsRefStr, strum_macros::Display, PartialEq, Serialize)]
+#[derive(
+    Debug,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Serialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum CoverFeature {
@@ -240,7 +300,14 @@ pub enum CoverFeature {
 ///
 /// Variants will be serialized in `snake_case`.
 /// See API documentation for more information.
-#[derive(Debug, strum_macros::AsRefStr, strum_macros::Display, PartialEq, Serialize)]
+#[derive(
+    Debug,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Serialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum LightFeature {
@@ -255,7 +322,14 @@ pub enum LightFeature {
 ///
 /// Variants will be serialized in `snake_case`.
 /// See API documentation for more information.
-#[derive(Debug, strum_macros::AsRefStr, strum_macros::Display, PartialEq, Serialize)]
+#[derive(
+    Debug,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Serialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum MediaPlayerFeature {
@@ -288,7 +362,14 @@ pub enum MediaPlayerFeature {
 ///
 /// Variants will be serialized in `snake_case`.
 /// See API documentation for more information.
-#[derive(Debug, strum_macros::AsRefStr, strum_macros::Display, PartialEq, Serialize)]
+#[derive(
+    Debug,
+    strum_macros::AsRefStr,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+    PartialEq,
+    Serialize,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum SensorOption {
