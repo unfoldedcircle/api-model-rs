@@ -17,6 +17,7 @@ use serde_with::skip_serializing_none;
 /// After successfully executing a command, the remote expects an `entity_change` event with the updated feature
 /// value(s). The immediate `result` response is to acknowledge the command or to return any immediate failures in
 /// case the driver already knows it's unable to perform the command due to device communication issues etc.
+#[skip_serializing_none]
 #[derive(Debug, Deserialize)]
 pub struct EntityCommand {
     pub device_id: Option<String>,
@@ -166,9 +167,9 @@ pub enum MediaPlayerCommand {
 /// Emitted when an attribute of an entity changes, e.g. is switched off. Either after an `entity_command` or if the
 /// entity is updated manually through a user or an external system. This keeps the remote in sync with the real
 /// state of the entity without the need of constant polling.
+#[skip_serializing_none]
 #[derive(Debug, Serialize)]
 pub struct EntityChange {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub device_id: Option<String>,
     pub entity_type: EntityType,
     pub entity_id: String,
@@ -185,23 +186,34 @@ pub struct EntityChange {
 ///
 /// See entity documentation for more information about the individual entity features and options.
 #[skip_serializing_none]
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct AvailableEntity {
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct AvailableIntgEntity {
     /// Optional associated device, if the integration driver supports multiple devices.
+    #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
     pub device_id: Option<String>,
     /// Discriminator value for the concrete entity device type.
     pub entity_type: EntityType,
-    /// Unique entity identifier.
+    /// Unique entity identifier within the integration device.
+    #[validate(length(
+        min = 1,
+        max = 36,
+        code = "INVALID_LENGTH",
+        message = "Invalid length (min = 1, max = 50)"
+    ))]
     pub entity_id: String,
     /// Optional device type. This can be used by the UI to represent the entity with a different
     /// icon, behaviour etc. See entity documentation for available device classes.
+    #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
     pub device_class: Option<String>,
     /// Display name of the entity in the UI.
-    /// An english text should always be provided as fallback option.
+    /// An english text with key `en` should always be provided as fallback option. Otherwise it's
+    /// not guaranteed which text will be displayed if the user selected language is not provided.
     pub friendly_name: HashMap<String, String>,
-    /// Supported features of the entity. See entity documentation for available features.
+    /// Supported features of the entity.
+    /// See entity specific feature enums and the entity documentation for available features.
     pub features: Option<Vec<String>>,
     /// Optional area if supported by the integration. E.g. `Living room`.
+    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
     pub area: Option<String>,
     /// Optional entity options. See entity documentation for available options.
     pub options: Option<serde_json::Map<String, Value>>,

@@ -2,7 +2,7 @@
 
 //! Integration related data structures.
 
-use crate::{AvailableEntity, EntityType};
+use crate::{AvailableIntgEntity, EntityType};
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -59,7 +59,7 @@ pub struct IntegrationStatus {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationDriverInfo {
     pub driver_id: String,
-    pub friendly_name: String,
+    pub friendly_name: HashMap<String, String>,
     pub driver_url: String,
     pub version: String,
     pub icon: Option<String>,
@@ -84,8 +84,12 @@ pub struct IntegrationDriver {
     /// Unique driver identifier.  
     /// Provided by the user or during driver registration. Otherwise a generated UUID.
     pub driver_id: String,
-    /// Name of the driver to display in the UI.
-    pub friendly_name: String,
+    /// Name of the driver to display in the UI.  
+    /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix to
+    /// represent a `culture code`. Examples: `en`, `en-UK`, `en-US`, `de`, `de-CH`.  
+    /// An english text with key `en` should always be provided as fallback option. Otherwise it's
+    /// not guaranteed which text will be displayed if the user selected language is not provided.
+    pub friendly_name: HashMap<String, String>,
     /// WebSocket URL of the integration driver.
     pub driver_url: String,
     /// Optional driver authentication token.
@@ -102,8 +106,9 @@ pub struct IntegrationDriver {
     /// Enables or disables driver communication.
     /// If disabled, all integration instances won't be activated, even if the instance is enabled.
     pub enabled: bool,
-    /// Optional description of the integration.
-    pub description: Option<String>,
+    /// Optional description of the integration.  
+    /// Key value pairs of language texts.
+    pub description: Option<HashMap<String, String>>,
     /// Optional information about the integration developer or company.
     pub developer: Option<DriverDeveloper>,
     /// Optional home page url for more information.
@@ -135,8 +140,8 @@ pub struct IntegrationDriverUpdate {
         message = "Invalid length (min = 1, max = 50)"
     ))]
     pub driver_id: Option<String>,
-    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
-    pub friendly_name: Option<String>,
+    // TODO how to validate a HashMap? Custom validation function?
+    pub friendly_name: Option<HashMap<String, String>>,
     #[validate(url)]
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub driver_url: Option<String>,
@@ -150,8 +155,7 @@ pub struct IntegrationDriverUpdate {
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
-    #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
-    pub description: Option<String>,
+    pub description: Option<HashMap<String, String>>,
     #[validate]
     pub developer: Option<DriverDeveloper>,
     #[validate(url)]
@@ -169,7 +173,7 @@ pub struct IntegrationDriverUpdate {
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct DriverDeveloper {
-    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
+    #[validate(length(max = 100, message = "Invalid length (max = 100)"))]
     pub name: Option<String>,
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub url: Option<String>,
@@ -190,6 +194,7 @@ pub struct Integration {
     pub driver_id: String,
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
+    /// Assigned name, usually the default driver name and an optional device identifier.
     pub friendly_name: String,
     pub icon: Option<String>,
     pub enabled: bool,
@@ -311,8 +316,9 @@ pub struct AvailableEntitiesFilter {
 
 /// Payload data of `available_entities` response message in `msg_data` property.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct AvailableEntitiesMsgData {
     pub filter: Option<AvailableEntitiesFilter>,
-    pub available_entities: Vec<AvailableEntity>,
+    #[validate]
+    pub available_entities: Vec<AvailableIntgEntity>,
 }
