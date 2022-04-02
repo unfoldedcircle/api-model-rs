@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
 
+use crate::{RE_ICON_ID, RE_ID_CHARS};
+
 /// Execute an entity command.
 ///
 /// Instruct the integration driver to execute a command like "turn on" or "change temperature".
@@ -190,8 +192,9 @@ pub struct EntityChange {
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct AvailableIntgEntity {
-    /// Optional associated device, if the integration driver supports multiple devices.
+    /// Optional associated device, only if the integration driver supports multiple devices.
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
+    #[validate(regex(path = "RE_ID_CHARS"))]
     pub device_id: Option<String>,
     /// Discriminator value for the concrete entity device type.
     pub entity_type: EntityType,
@@ -200,8 +203,9 @@ pub struct AvailableIntgEntity {
         min = 1,
         max = 36,
         code = "INVALID_LENGTH",
-        message = "Invalid length (min = 1, max = 50)"
+        message = "Invalid length (min = 1, max = 36)"
     ))]
+    #[validate(regex(path = "RE_ID_CHARS"))]
     pub entity_id: String,
     /// Optional device type. This can be used by the UI to represent the entity with a different
     /// icon, behaviour etc. See entity documentation for available device classes.

@@ -2,17 +2,18 @@
 
 //! Integration related data structures.
 
-use crate::{AvailableIntgEntity, EntityType};
+use std::collections::HashMap;
+
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
 #[cfg(feature = "sqlx")]
 use sqlx::types::Json;
-use std::collections::HashMap;
 use validator::Validate;
 
 use crate::ws::WsAuthentication;
+use crate::{AvailableIntgEntity, EntityType, RE_ICON_ID, RE_ID_CHARS};
 
 /// Integration driver version information.
 #[derive(Debug, Serialize)]
@@ -137,12 +138,8 @@ pub struct IntegrationDriver {
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct IntegrationDriverUpdate {
-    #[validate(length(
-        min = 1,
-        max = 36,
-        code = "INVALID_LENGTH",
-        message = "Invalid length (min = 1, max = 50)"
-    ))]
+    #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
+    #[validate(regex(path = "RE_ID_CHARS"))]
     pub driver_id: Option<String>,
     // TODO how to validate a HashMap? Custom validation function?
     pub name: Option<HashMap<String, String>>,
@@ -179,8 +176,10 @@ pub struct IntegrationDriverUpdate {
 pub struct DriverDeveloper {
     #[validate(length(max = 100, message = "Invalid length (max = 100)"))]
     pub name: Option<String>,
+    #[validate(url)]
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub url: Option<String>,
+    #[validate(email)]
     #[validate(length(max = 100, message = "Invalid length (max = 100)"))]
     pub email: Option<String>,
 }
@@ -219,27 +218,20 @@ pub struct Integration {
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct IntegrationUpdate {
-    #[validate(length(
-        min = 1,
-        max = 36,
-        code = "INVALID_LENGTH",
-        message = "Invalid length (min = 1, max = 36)"
-    ))]
+    /// Unique integration instance identifier. ID is set by the system.
+    /// This field cannot be updated
     pub integration_id: Option<String>,
-    #[validate(length(
-        min = 1,
-        max = 36,
-        code = "INVALID_LENGTH",
-        message = "Invalid length (min = 1, max = 50)"
-    ))]
     /// The required integration driver. References ['IntegrationDriver'].
     /// This field cannot be updated
     pub driver_id: Option<String>,
     /// Only required for multi-device integrations.
     /// This field cannot be updated.
+    #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
+    #[validate(regex(path = "RE_ID_CHARS", code = "INVALID_CHARACTERS"))]
     pub device_id: Option<String>,
     pub name: Option<HashMap<String, String>>,
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    #[validate(regex(path = "RE_ICON_ID", code = "INVALID_CHARACTERS"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
     #[cfg(feature = "sqlx")]

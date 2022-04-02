@@ -23,6 +23,8 @@ derive_more = "0.99"
 
 validator = "0.14"
 validator_derive = "0.14"
+regex = "1"
+lazy_static = "1"
 
 [dependencies.sqlx]
 version = "0.5"

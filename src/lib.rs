@@ -35,6 +35,9 @@
 #[macro_use]
 extern crate validator_derive;
 
+use lazy_static::lazy_static;
+use regex::Regex;
+
 pub use entity::*;
 pub use integration::*;
 
@@ -42,3 +45,8 @@ mod entity;
 mod integration;
 pub mod web;
 pub mod ws;
+
+lazy_static! {
+    static ref RE_ID_CHARS: Regex = Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap(); // max length is a dedicated validation for better error messages
+    static ref RE_ICON_ID: Regex = Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").unwrap();
+}
