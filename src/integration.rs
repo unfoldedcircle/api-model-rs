@@ -254,9 +254,9 @@ pub struct IntegrationUpdate {
 #[derive(
     Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
 )]
-#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
 pub enum DeviceState {
     Connecting,

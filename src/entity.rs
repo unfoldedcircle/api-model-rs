@@ -43,6 +43,8 @@ pub struct EntityCommand {
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[cfg_attr(feature = "sqlx", sqlx(rename_all = "snake_case"))]
 pub enum EntityType {
     Button,
     Switch,
