@@ -208,7 +208,7 @@ pub struct AvailableIntgEntity {
     /// Display name of the entity in the UI.
     /// An english text with key `en` should always be provided as fallback option. Otherwise it's
     /// not guaranteed which text will be displayed if the user selected language is not provided.
-    pub friendly_name: HashMap<String, String>,
+    pub name: HashMap<String, String>,
     /// Supported features of the entity.
     /// See entity specific feature enums and the entity documentation for available features.
     pub features: Option<Vec<String>>,

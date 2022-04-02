@@ -44,7 +44,7 @@ pub struct IntegrationStatus {
     pub integration_id: String,
     /// Name of the integration driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
-    pub friendly_name: HashMap<String, String>,
+    pub name: HashMap<String, String>,
     pub icon: Option<String>,
     /// Device state. This is the last known state of the device.
     pub state: DeviceState,
@@ -63,7 +63,7 @@ pub struct IntegrationDriverInfo {
     pub driver_id: String,
     /// Name of the driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
-    pub friendly_name: HashMap<String, String>,
+    pub name: HashMap<String, String>,
     pub driver_url: String,
     pub version: String,
     pub icon: Option<String>,
@@ -93,7 +93,7 @@ pub struct IntegrationDriver {
     /// represent a `culture code`. Examples: `en`, `en-UK`, `en-US`, `de`, `de-CH`.  
     /// An english text with key `en` should always be provided as fallback option. Otherwise it's
     /// not guaranteed which text will be displayed if the user selected language is not provided.
-    pub friendly_name: HashMap<String, String>,
+    pub name: HashMap<String, String>,
     /// WebSocket URL of the integration driver.
     pub driver_url: String,
     /// Optional driver authentication token.
@@ -145,7 +145,7 @@ pub struct IntegrationDriverUpdate {
     ))]
     pub driver_id: Option<String>,
     // TODO how to validate a HashMap? Custom validation function?
-    pub friendly_name: Option<HashMap<String, String>>,
+    pub name: Option<HashMap<String, String>>,
     #[validate(url)]
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub driver_url: Option<String>,
@@ -201,7 +201,7 @@ pub struct Integration {
     /// Name of the integration instance.  
     /// Usually the default driver name and an optional device identifier.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
-    pub friendly_name: HashMap<String, String>,
+    pub name: HashMap<String, String>,
     pub icon: Option<String>,
     pub enabled: bool,
     /// Optional configuration data if supported or required by the driver.
@@ -238,7 +238,7 @@ pub struct IntegrationUpdate {
     /// Only required for multi-device integrations.
     /// This field cannot be updated.
     pub device_id: Option<String>,
-    pub friendly_name: Option<HashMap<String, String>>,
+    pub name: Option<HashMap<String, String>>,
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
@@ -296,7 +296,7 @@ pub struct EntityAvailableMsgData {
     pub entity_type: EntityType,
     pub entity_id: String,
     pub features: Option<Vec<String>>,
-    pub friendly_name: HashMap<String, String>,
+    pub name: HashMap<String, String>,
     pub area: Option<String>,
 }
 
