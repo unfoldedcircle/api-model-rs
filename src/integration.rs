@@ -42,7 +42,9 @@ pub struct SubscribeEvents {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationStatus {
     pub integration_id: String,
-    pub friendly_name: String,
+    /// Name of the integration driver.  
+    /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
+    pub friendly_name: HashMap<String, String>,
     pub icon: Option<String>,
     /// Device state. This is the last known state of the device.
     pub state: DeviceState,
@@ -59,6 +61,8 @@ pub struct IntegrationStatus {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationDriverInfo {
     pub driver_id: String,
+    /// Name of the driver.  
+    /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub friendly_name: HashMap<String, String>,
     pub driver_url: String,
     pub version: String,
@@ -194,8 +198,10 @@ pub struct Integration {
     pub driver_id: String,
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
-    /// Assigned name, usually the default driver name and an optional device identifier.
-    pub friendly_name: String,
+    /// Name of the integration instance.  
+    /// Usually the default driver name and an optional device identifier.  
+    /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
+    pub friendly_name: HashMap<String, String>,
     pub icon: Option<String>,
     pub enabled: bool,
     /// Optional configuration data if supported or required by the driver.
@@ -232,8 +238,7 @@ pub struct IntegrationUpdate {
     /// Only required for multi-device integrations.
     /// This field cannot be updated.
     pub device_id: Option<String>,
-    #[validate(length(max = 50, message = "Invalid length (max = 50)"))]
-    pub friendly_name: Option<String>,
+    pub friendly_name: Option<HashMap<String, String>>,
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
