@@ -111,7 +111,7 @@ impl WsMessage {
         }
     }
 
-    pub fn error(req_id: u32, code: u16, msg_data: WsError) -> Self {
+    pub fn error(req_id: u32, code: u16, msg_data: WsResultMsgData) -> Self {
         Self {
             kind: Some("resp".into()),
             req_id: Some(req_id),
@@ -195,7 +195,7 @@ impl WsResponse {
         }
     }
 
-    pub fn error(req_id: u32, code: u16, msg_data: WsError) -> Self {
+    pub fn error(req_id: u32, code: u16, msg_data: WsResultMsgData) -> Self {
         Self {
             kind: "resp".into(),
             req_id,
@@ -240,14 +240,14 @@ impl WsResponse {
     }
 }
 
-/// Error object.
+/// Default payload data of `result` response message in `msg_data` property.
 #[derive(Debug, Serialize)]
-pub struct WsError {
+pub struct WsResultMsgData {
     pub code: String,
     pub message: String,
 }
 
-impl WsError {
+impl WsResultMsgData {
     pub fn new(code: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             code: code.into(),
