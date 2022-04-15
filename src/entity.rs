@@ -20,13 +20,13 @@ use crate::RE_ID_CHARS;
 /// value(s). The immediate `result` response is to acknowledge the command or to return any immediate failures in
 /// case the driver already knows it's unable to perform the command due to device communication issues etc.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct EntityCommand {
     pub device_id: Option<String>,
     pub entity_type: EntityType,
     pub entity_id: String,
     pub cmd_id: String,
-    pub params: Option<Value>,
+    pub params: Option<serde_json::Map<String, Value>>,
 }
 
 /// Supported entity types.
@@ -66,6 +66,7 @@ pub enum EntityType {
     strum_macros::EnumVariantNames,
     PartialEq,
     Deserialize,
+    Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
@@ -84,6 +85,7 @@ pub enum SwitchCommand {
     strum_macros::EnumVariantNames,
     PartialEq,
     Deserialize,
+    Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
@@ -105,6 +107,7 @@ pub enum ClimateCommand {
     strum_macros::EnumVariantNames,
     PartialEq,
     Deserialize,
+    Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
@@ -124,6 +127,7 @@ pub enum CoverCommand {
     strum_macros::EnumVariantNames,
     PartialEq,
     Deserialize,
+    Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
@@ -142,6 +146,7 @@ pub enum LightCommand {
     strum_macros::EnumVariantNames,
     PartialEq,
     Deserialize,
+    Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
@@ -172,7 +177,7 @@ pub enum MediaPlayerCommand {
 /// entity is updated manually through a user or an external system. This keeps the remote in sync with the real
 /// state of the entity without the need of constant polling.
 #[skip_serializing_none]
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct EntityChange {
     pub device_id: Option<String>,
     pub entity_type: EntityType,
@@ -192,12 +197,6 @@ pub struct EntityChange {
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct AvailableIntgEntity {
-    /// Optional associated device, only if the integration driver supports multiple devices.
-    #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
-    #[validate(regex(path = "RE_ID_CHARS"))]
-    pub device_id: Option<String>,
-    /// Discriminator value for the concrete entity device type.
-    pub entity_type: EntityType,
     /// Unique entity identifier within the integration device.
     #[validate(length(
         min = 1,
@@ -207,6 +206,12 @@ pub struct AvailableIntgEntity {
     ))]
     #[validate(regex(path = "RE_ID_CHARS"))]
     pub entity_id: String,
+    /// Optional associated device, only if the integration driver supports multiple devices.
+    #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
+    #[validate(regex(path = "RE_ID_CHARS"))]
+    pub device_id: Option<String>,
+    /// Discriminator value for the concrete entity device type.
+    pub entity_type: EntityType,
     /// Optional device type. This can be used by the UI to represent the entity with a different
     /// icon, behaviour etc. See entity documentation for available device classes.
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
@@ -235,6 +240,7 @@ pub struct AvailableIntgEntity {
     strum_macros::Display,
     strum_macros::EnumVariantNames,
     PartialEq,
+    Deserialize,
     Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
@@ -254,6 +260,7 @@ pub enum SwitchDeviceClass {
     strum_macros::Display,
     strum_macros::EnumVariantNames,
     PartialEq,
+    Deserialize,
     Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
@@ -278,6 +285,7 @@ pub enum ClimateFeature {
     strum_macros::Display,
     strum_macros::EnumVariantNames,
     PartialEq,
+    Deserialize,
     Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
@@ -300,6 +308,7 @@ pub enum ClimateOption {
     strum_macros::Display,
     strum_macros::EnumVariantNames,
     PartialEq,
+    Deserialize,
     Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
@@ -324,6 +333,7 @@ pub enum CoverFeature {
     strum_macros::Display,
     strum_macros::EnumVariantNames,
     PartialEq,
+    Deserialize,
     Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
@@ -346,6 +356,7 @@ pub enum LightFeature {
     strum_macros::Display,
     strum_macros::EnumVariantNames,
     PartialEq,
+    Deserialize,
     Serialize,
 )]
 #[strum(serialize_all = "snake_case")]
@@ -386,6 +397,7 @@ pub enum MediaPlayerFeature {
     strum_macros::Display,
     strum_macros::EnumVariantNames,
     PartialEq,
+    Deserialize,
     Serialize,
 )]
 #[strum(serialize_all = "snake_case")]

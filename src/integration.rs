@@ -16,7 +16,7 @@ use crate::ws::WsAuthentication;
 use crate::{AvailableIntgEntity, EntityType, RE_ICON_ID, RE_ID_CHARS};
 
 /// Integration driver version information.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationVersion {
     /// Implemented API version.
     pub api: String,
@@ -28,7 +28,7 @@ pub struct IntegrationVersion {
 ///
 /// Subscribe to entity state change events to receive `entity_change` events from the integration driver.
 /// If no entity IDs are specified then events for all available entities are sent to the remote.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct SubscribeEvents {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
@@ -244,7 +244,7 @@ pub struct IntegrationUpdate {
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
 #[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Serialize, Deserialize,
+    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Deserialize, Serialize,
 )]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
