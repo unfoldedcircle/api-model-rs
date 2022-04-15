@@ -97,6 +97,7 @@ pub enum R2Event {
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum DriverResponse {
+    Result,
     DriverVersion,
     DeviceSetupComplete,
     AvailableEntities,
