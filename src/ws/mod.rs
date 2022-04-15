@@ -62,18 +62,22 @@ pub struct WsMessage {
 }
 
 impl WsMessage {
-    pub fn event(msg: &str, cat: Option<EventCategory>, msg_data: Value) -> Self {
+    pub fn event(
+        msg: impl Into<String>,
+        cat: impl Into<Option<EventCategory>>,
+        msg_data: Value,
+    ) -> Self {
         Self {
             kind: Some("event".into()),
             msg: Some(msg.into()),
-            cat,
+            cat: cat.into(),
             ts: Some(Utc::now()),
             msg_data: Some(msg_data),
             ..Default::default()
         }
     }
 
-    pub fn response_json(req_id: u32, msg: &str, msg_data: Value) -> Self {
+    pub fn response_json(req_id: u32, msg: impl Into<String>, msg_data: Value) -> Self {
         Self {
             kind: Some("resp".into()),
             req_id: Some(req_id),
@@ -83,7 +87,7 @@ impl WsMessage {
         }
     }
 
-    pub fn response<T: serde::Serialize>(req_id: u32, msg: &str, msg_data: T) -> Self {
+    pub fn response<T: serde::Serialize>(req_id: u32, msg: impl Into<String>, msg_data: T) -> Self {
         match serde_json::to_value(msg_data) {
             Ok(v) => Self {
                 kind: Some("resp".into()),
@@ -241,6 +245,15 @@ impl WsResponse {
 pub struct WsError {
     pub code: String,
     pub message: String,
+}
+
+impl WsError {
+    pub fn new(code: impl Into<String>, message: impl Into<String>) -> Self {
+        Self {
+            code: code.into(),
+            message: message.into(),
+        }
+    }
 }
 
 /// Event message categories.
