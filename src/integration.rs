@@ -266,17 +266,6 @@ pub struct DeviceStateMsgData {
     pub state: DeviceState,
 }
 
-/// Payload data of `entity_change` event message in `msg_data` property.  
-#[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
-pub struct EntityChangeMsgData {
-    /// Only required for multi-device integrations.
-    pub device_id: Option<String>,
-    pub entity_type: EntityType,
-    pub entity_id: String,
-    pub attributes: Option<serde_json::Map<String, Value>>, // TODO map sufficient or better use a generic serde_json::Value?
-}
-
 /// Payload data of `entity_available` event message in `msg_data` property.
 ///
 /// This is an optional event and not yet implemented in the core.
