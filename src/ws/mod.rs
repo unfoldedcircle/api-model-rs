@@ -241,7 +241,7 @@ impl WsResponse {
 }
 
 /// Default payload data of `result` response message in `msg_data` property.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct WsResultMsgData {
     pub code: String,
     pub message: String,
