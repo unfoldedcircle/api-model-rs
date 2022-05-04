@@ -1,6 +1,9 @@
-// Copyright (c) 2022 Unfolded Circle ApS and/or its affiliates. All rights reserved. Use is subject to license terms.
+// Copyright (c) 2022 Unfolded Circle ApS and contributors
+// SPDX-License-Identifier: Apache-2.0
 
-//! Integration related data structures.
+//! Integration API related data structures, independent of the transport layer.
+//!
+//! See `ws` sub module for WebSocket specific message structures.
 
 use std::collections::HashMap;
 
@@ -13,7 +16,12 @@ use sqlx::types::Json;
 use validator::Validate;
 
 use crate::ws::WsAuthentication;
-use crate::{AvailableIntgEntity, EntityType, RE_ICON_ID, RE_ID_CHARS};
+use crate::{REGEX_ICON_ID, REGEX_ID_CHARS};
+
+mod entity;
+pub mod ws;
+
+pub use entity::*;
 
 /// Integration driver version information.
 #[derive(Debug, Deserialize, Serialize)]
@@ -123,9 +131,9 @@ pub struct IntegrationDriver {
     /// Driver configuration metadata describing configuration parameters for the web-configurator.
     /// **Not yet finalized**.
     #[cfg(feature = "sqlx")]
-    pub setup_data_schema: Json<serde_json::Value>,
+    pub setup_data_schema: Json<Value>,
     #[cfg(not(feature = "sqlx"))]
-    pub setup_data_schema: serde_json::Value,
+    pub setup_data_schema: Value,
     /// Release date of the driver.
     pub release_date: Option<NaiveDate>,
 }
@@ -139,7 +147,7 @@ pub struct IntegrationDriver {
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct IntegrationDriverUpdate {
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
-    #[validate(regex(path = "RE_ID_CHARS"))]
+    #[validate(regex(path = "REGEX_ID_CHARS"))]
     pub driver_id: Option<String>,
     // TODO how to validate a HashMap? Custom validation function?
     pub name: Option<HashMap<String, String>>,
@@ -164,9 +172,9 @@ pub struct IntegrationDriverUpdate {
     pub home_page: Option<String>,
     pub device_discovery: Option<bool>,
     #[cfg(feature = "sqlx")]
-    pub setup_data_schema: Option<Json<serde_json::Value>>,
+    pub setup_data_schema: Option<Json<Value>>,
     #[cfg(not(feature = "sqlx"))]
-    pub setup_data_schema: Option<serde_json::Value>,
+    pub setup_data_schema: Option<Value>,
     pub release_date: Option<NaiveDate>,
 }
 
@@ -227,11 +235,11 @@ pub struct IntegrationUpdate {
     /// Only required for multi-device integrations.
     /// This field cannot be updated.
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
-    #[validate(regex(path = "RE_ID_CHARS", code = "INVALID_CHARACTERS"))]
+    #[validate(regex(path = "REGEX_ID_CHARS", code = "INVALID_CHARACTERS"))]
     pub device_id: Option<String>,
     pub name: Option<HashMap<String, String>>,
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
-    #[validate(regex(path = "RE_ICON_ID", code = "INVALID_CHARACTERS"))]
+    #[validate(regex(path = "REGEX_ICON_ID", code = "INVALID_CHARACTERS"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
     #[cfg(feature = "sqlx")]
@@ -255,56 +263,4 @@ pub enum DeviceState {
     Connected,
     Disconnected,
     Error,
-}
-
-/// Payload data of a `device_state` event message in `msg_data` property.  
-#[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
-pub struct DeviceStateMsgData {
-    /// Only required for multi-device integrations.
-    pub device_id: Option<String>,
-    pub state: DeviceState,
-}
-
-/// Payload data of `entity_available` event message in `msg_data` property.
-///
-/// This is an optional event and not yet implemented in the core.
-#[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
-pub struct EntityAvailableMsgData {
-    /// Only required for multi-device integrations.
-    pub device_id: Option<String>,
-    pub entity_type: EntityType,
-    pub entity_id: String,
-    pub features: Option<Vec<String>>,
-    pub name: HashMap<String, String>,
-    pub area: Option<String>,
-}
-
-/// Payload data of `entity_removed` event message in `msg_data` property.
-///  
-/// This is an optional event and not yet implemented in the core.
-#[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
-pub struct EntityRemovedMsgData {
-    /// Only required for multi-device integrations.
-    pub device_id: Option<String>,
-    pub entity_type: EntityType,
-    pub entity_id: String,
-}
-
-#[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
-pub struct AvailableEntitiesFilter {
-    pub device_id: Option<String>,
-    pub entity_type: Option<EntityType>,
-}
-
-/// Payload data of `available_entities` response message in `msg_data` property.
-#[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize, Validate)]
-pub struct AvailableEntitiesMsgData {
-    pub filter: Option<AvailableEntitiesFilter>,
-    #[validate]
-    pub available_entities: Vec<AvailableIntgEntity>,
 }

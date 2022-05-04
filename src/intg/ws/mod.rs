@@ -1,8 +1,15 @@
-// Copyright (c) 2022 Unfolded Circle ApS and/or its affiliates. All rights reserved. Use is subject to license terms.
+// Copyright (c) 2022 Unfolded Circle ApS and contributors
+// SPDX-License-Identifier: Apache-2.0
 
-//! Integration driver specific WebSocket messages.
+//! Integration API specific WebSocket messages.
 
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
+use std::collections::HashMap;
+use validator::Validate;
+
+use crate::intg::{AvailableIntgEntity, DeviceState};
+use crate::EntityType;
 
 /// Remote Two initiated request messages for the integration driver.
 ///
@@ -127,4 +134,56 @@ pub enum DriverEvent {
     EntityRemoved,
     DiscoveredDevice,
     DiscoveryFinished,
+}
+
+/// Payload data of a `device_state` event message in `msg_data` property.  
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DeviceStateMsgData {
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
+    pub state: DeviceState,
+}
+
+/// Payload data of `entity_available` event message in `msg_data` property.
+///
+/// This is an optional event and not yet implemented in the core.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct EntityAvailableMsgData {
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
+    pub entity_type: EntityType,
+    pub entity_id: String,
+    pub features: Option<Vec<String>>,
+    pub name: HashMap<String, String>,
+    pub area: Option<String>,
+}
+
+/// Payload data of `entity_removed` event message in `msg_data` property.
+///  
+/// This is an optional event and not yet implemented in the core.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct EntityRemovedMsgData {
+    /// Only required for multi-device integrations.
+    pub device_id: Option<String>,
+    pub entity_type: EntityType,
+    pub entity_id: String,
+}
+
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AvailableEntitiesFilter {
+    pub device_id: Option<String>,
+    pub entity_type: Option<EntityType>,
+}
+
+/// Payload data of `available_entities` response message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Deserialize, Serialize, Validate)]
+pub struct AvailableEntitiesMsgData {
+    pub filter: Option<AvailableEntitiesFilter>,
+    #[validate]
+    pub available_entities: Vec<AvailableIntgEntity>,
 }

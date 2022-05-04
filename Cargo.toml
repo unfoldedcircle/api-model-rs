@@ -1,11 +1,11 @@
 [package]
 name = "uc_api"
-version = "0.4.0-alpha"
+version = "0.6.0-alpha"
 authors = ["Markus Zehnder <markus.z@unfoldedcircle.com>"]
 license = "Apache-2.0"
 description = "Unfolded Circle API model"
 edition = "2021"
-#repository = "https://github.com/TODO"
+repository = "https://github.com/unfoldedcircle/api-model-rs"
 #documentation = "TODO"
 
 [dependencies]

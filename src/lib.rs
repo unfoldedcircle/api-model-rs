@@ -1,12 +1,13 @@
-// Copyright (c) 2022 Unfolded Circle ApS and/or its affiliates. All rights reserved. Use is subject to license terms.
+// Copyright (c) 2022 Unfolded Circle ApS and contributors
+// SPDX-License-Identifier: Apache-2.0
 
 //! # Remote Two API Models
 //!
-//! This crate provides structs and enums for the [Remote Two](https://www.yio-remote.com/) API
-//! messages and data structures.
+//! This crate provides structs and enums for the [Remote Two APIs](https://github.com/unfoldedcircle/core-api).
 //!
 //! It can be used for user based Rust integration drivers as the Home-Assistant integration.
 //! _TODO_ add GitHub link once published!
+//!
 //! The model is also being used in the remote-core implementation to make sure it is up-to-date
 //! with the API specifications.
 //!
@@ -15,14 +16,14 @@
 //!
 //! ## API Specifications
 //!
-//! _TODO add links once published on GitHub_
+//! See [core-api](https://github.com/unfoldedcircle/core-api) GitHub repository.
 //!
 //! WebSocket APIs:
-//! - Integration AsyncAPI
-//! - Core AsyncAPI
+//! - [Integration AsyncAPI](https://github.com/unfoldedcircle/core-api/tree/main/integration-api)
+//! - Core AsyncAPI - _not yet published_
 //!
 //! REST API:
-//! - Core OpenAPI
+//! - Core OpenAPI - _not yet published_
 //!
 
 // Note: unfortunately the validator crate doesn't allow to use variables or constants for repeating
@@ -38,15 +39,14 @@ extern crate validator_derive;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-pub use entity::*;
-pub use integration::*;
-
+pub mod core;
 mod entity;
-mod integration;
-pub mod web;
+pub mod intg;
 pub mod ws;
 
+pub use entity::*;
+
 lazy_static! {
-    static ref RE_ID_CHARS: Regex = Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap(); // max length is a dedicated validation for better error messages
-    static ref RE_ICON_ID: Regex = Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").unwrap();
+    static ref REGEX_ID_CHARS: Regex = Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap(); // max length is a dedicated validation for better error messages
+    static ref REGEX_ICON_ID: Regex = Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").unwrap();
 }
