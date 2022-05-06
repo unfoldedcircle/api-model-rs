@@ -14,6 +14,18 @@ use crate::EntityType;
 /// Remote Two initiated request messages for the integration driver.
 ///
 /// The corresponding response message name is set with the strum message macro
+///
+/// # Examples
+///
+/// Deserialize from string:
+/// ```
+/// use std::str::FromStr;
+/// use uc_api::intg::ws::R2Request;
+/// assert_eq!(Ok(R2Request::SubscribeEvents), R2Request::from_str("subscribe_events"));
+/// ```
+// TODO refactor response message relationship? Use a typed DriverResponse variant as enum data.
+//      --> verify Serde if data can be ignored while (de)serializing. This was the reason for using
+//          the simple strum message approach...
 #[derive(
     Debug,
     Clone,

@@ -5,14 +5,16 @@
 //!
 //! This crate provides structs and enums for the [Remote Two APIs](https://github.com/unfoldedcircle/core-api).
 //!
-//! It can be used for user based Rust integration drivers as the Home-Assistant integration.
+//! The models can be used for user based Rust integration drivers as the Home-Assistant integration.
 //! _TODO_ add GitHub link once published!
 //!
-//! The model is also being used in the remote-core implementation to make sure it is up-to-date
-//! with the API specifications.
+//! The model is also being used in the remote-core & simulator implementation to make sure it is
+//! up-to-date with the API specifications.
 //!
-//! Note: the defined structs are as simple as possible in terms of lifetimes and not optimized for
-//! Serde zero-copy deserialization. More information: <https://serde.rs/lifetimes.html>
+//! Notes:
+//! - The models are manually defined and not auto-generated from the AsyncAPI & OpenAPI definitions.
+//! - The defined structs are as simple as possible in terms of lifetimes and not optimized for
+//!   Serde zero-copy deserialization. More information: <https://serde.rs/lifetimes.html>
 //!
 //! ## API Specifications
 //!
@@ -47,6 +49,7 @@ pub mod ws;
 pub use entity::*;
 
 lazy_static! {
-    static ref REGEX_ID_CHARS: Regex = Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap(); // max length is a dedicated validation for better error messages
+    // max length is a dedicated validation for better error messages
+    static ref REGEX_ID_CHARS: Regex = Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap();
     static ref REGEX_ICON_ID: Regex = Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").unwrap();
 }

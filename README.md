@@ -2,11 +2,8 @@
 
 This crate provides structs and enums for the [Unfolded Circle Remote Two](https://www.unfoldedcircle.com/) APIs.
 
-It can be used for user based Rust integration drivers as the Home-Assistant integration.
-_TODO_ add GitHub link once published!
-
-The model is also being used in the remote-core & simulator implementations to make sure it is up-to-date with the API
-specifications.
+The model can be used for user based Rust integration drivers. It is also being used in the Unfolded Circle remote-core
+& simulator implementations to make sure it is up-to-date with the API specifications.
 
 ## API Specifications
 
@@ -18,6 +15,17 @@ WebSocket APIs defined with [AsyncAPI](https://www.asyncapi.com/):
 
 REST API defined with [OpenAPI](https://www.openapis.org/):
 - Core REST API - _not yet published_
+
+## Versioning
+
+The API is versioned according to [SemVer](https://semver.org/).
+
+The API models will closely follow the core-api versioning. The major version will relate to the
+corresponding API release. Not all defined models in the API might be immediately included and might be added later in
+a patch or minor release.
+
+**Any major version zero (`0.y.z`) is for initial development and may change at any time!**  
+I.e. backward compatibility for minor releases is not yet established, anything MAY change at any time!
 
 ## Contributions
 

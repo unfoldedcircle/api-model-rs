@@ -6,7 +6,6 @@ license = "Apache-2.0"
 description = "Unfolded Circle API model"
 edition = "2021"
 repository = "https://github.com/unfoldedcircle/api-model-rs"
-#documentation = "TODO"
 
 [dependencies]
 # JSON (de)serialization

@@ -34,7 +34,8 @@ pub struct IntegrationVersion {
 
 /// Subscribe to events.
 ///
-/// Subscribe to entity state change events to receive `entity_change` events from the integration driver.
+/// Subscribe to entity state change events to receive `entity_change` events from the integration
+/// driver.  
 /// If no entity IDs are specified then events for all available entities are sent to the remote.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SubscribeEvents {
@@ -50,15 +51,15 @@ pub struct SubscribeEvents {
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationStatus {
+    /// Integration instance identifier.  
     pub integration_id: String,
     /// Name of the integration driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub name: HashMap<String, String>,
+    /// Optional icon identifier of the integration.
     pub icon: Option<String>,
     /// Device state. This is the last known state of the device.
     pub state: DeviceState,
-    // TODO Integration driver state?
-    // pub driver_state: DeviceState,
     /// Integration is enabled
     pub enabled: bool,
 }
@@ -69,12 +70,14 @@ pub struct IntegrationStatus {
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegrationDriverInfo {
+    /// Integration driver identifier.  
     pub driver_id: String,
     /// Name of the driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub name: HashMap<String, String>,
     pub driver_url: String,
     pub version: String,
+    /// Optional icon identifier of the integration driver.
     pub icon: Option<String>,
     pub enabled: bool,
 }
@@ -115,6 +118,7 @@ pub struct IntegrationDriver {
     pub version: String,
     /// Optional version check: minimum required core API version in the remote.
     pub min_core_api: Option<String>,
+    /// Optional icon identifier of the integration driver.
     pub icon: Option<String>,
     /// Enables or disables driver communication.
     /// If disabled, all integration instances won't be activated, even if the instance is enabled.
@@ -146,10 +150,11 @@ pub struct IntegrationDriver {
 #[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct IntegrationDriverUpdate {
+    /// Integration driver identifier.  
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
     #[validate(regex(path = "REGEX_ID_CHARS"))]
     pub driver_id: Option<String>,
-    // TODO how to validate a HashMap? Custom validation function?
+    // TODO validate HashMap with custom validation function?
     pub name: Option<HashMap<String, String>>,
     #[validate(url)]
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
@@ -161,6 +166,7 @@ pub struct IntegrationDriverUpdate {
     pub version: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
     pub min_core_api: Option<String>,
+    /// Optional icon identifier of the integration driver.
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
@@ -209,6 +215,7 @@ pub struct Integration {
     /// Usually the default driver name and an optional device identifier.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub name: HashMap<String, String>,
+    /// Optional icon identifier of the integration.
     pub icon: Option<String>,
     pub enabled: bool,
     /// Optional configuration data if supported or required by the driver.
@@ -238,6 +245,7 @@ pub struct IntegrationUpdate {
     #[validate(regex(path = "REGEX_ID_CHARS", code = "INVALID_CHARACTERS"))]
     pub device_id: Option<String>,
     pub name: Option<HashMap<String, String>>,
+    /// Optional icon identifier of the integration.
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     #[validate(regex(path = "REGEX_ICON_ID", code = "INVALID_CHARACTERS"))]
     pub icon: Option<String>,
