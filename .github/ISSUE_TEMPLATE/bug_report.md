@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-<!-- Before you open an issue, please search on the [issue tracker](https://github.com/unfoldedcircle/api-model-rs/issues) if a similar issue already exists or has been closed before. -->
+<!-- Before you open an issue, please search on the issue tracker if a similar issue already exists or has been closed before: https://github.com/unfoldedcircle/api-model-rs/issues -->
 
 ## Description
 <!--- A clear and concise description of what the bug is. -->

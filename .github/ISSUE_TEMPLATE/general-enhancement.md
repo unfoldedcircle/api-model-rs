@@ -1,13 +1,13 @@
 ---
 name: General enhancement
-about: Model enhancement and refactoring to improve the project. For API changes, please see [Core API repository](https://github.com/unfoldedcircle/core-api).
+about: Model enhancement and refactoring to improve the project. For API enhancements, please see our core-api repository.
 title: ''
 labels: enhancement
 assignees: ''
 
 ---
 
-<!-- Before you open an issue, please search on the [issue tracker](https://github.com/unfoldedcircle/api-model-rs/issues) if a similar issue already exists or has been closed before. -->
+<!-- Before you open an issue, please search on the issue tracker if a similar issue already exists or has been closed before: https://github.com/unfoldedcircle/api-model-rs/issues -->
 
 ## Expected Behavior or Design
 <!--- Explain the difference from the current behavior  -->

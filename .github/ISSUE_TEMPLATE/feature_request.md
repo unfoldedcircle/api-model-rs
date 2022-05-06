@@ -1,13 +1,13 @@
 ---
 name: Feature request
-about: Suggest an idea for this project. For API changes, please see [Core API repository](https://github.com/unfoldedcircle/core-api).
+about: Suggest an idea for this project. For API changes, please see our core-api repository.
 title: ''
 labels: feature request
 assignees: ''
 
 ---
 
-<!-- Before you open an issue, please search on the [issue tracker](https://github.com/unfoldedcircle/api-model-rs/issues) if a similar issue already exists or has been closed before. -->
+<!-- Before you open an issue, please search on the issue tracker if a similar issue already exists or has been closed before: https://github.com/unfoldedcircle/api-model-rs/issues -->
 
 **Is your feature request related to a problem? Please describe.**
 <!-- A clear and concise description of what the problem is. -->
