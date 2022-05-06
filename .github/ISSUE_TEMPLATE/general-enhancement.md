@@ -1,6 +1,6 @@
 ---
 name: General enhancement
-about: API changes and refactoring to improve the project
+about: Model enhancement and refactoring to improve the project. For API changes, please see [Core API repository](https://github.com/unfoldedcircle/core-api).
 title: ''
 labels: enhancement
 assignees: ''
@@ -11,7 +11,7 @@ assignees: ''
 
 ## Expected Behavior or Design
 <!--- Explain the difference from the current behavior  -->
-<!--- List advantages and how the proposed change improves the API design -->
+<!--- List advantages and how the proposed change improves the API model -->
 
 ## Current Behavior or Design
 <!--- Describe the current implementation or design with its limitations or flaws -->

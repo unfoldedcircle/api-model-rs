@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an idea for this project. For API changes, please see [Core API repository](https://github.com/unfoldedcircle/core-api).
 title: ''
 labels: feature request
 assignees: ''
