@@ -4,7 +4,7 @@
 //! Common entity related data structures used in the Core & Integration APIs.
 //!
 //! See [Remote Two API documentation](https://github.com/unfoldedcircle/core-api/tree/main/doc)
-//! for more information, especially the [entity documentation](ttps://github.com/unfoldedcircle/core-api/tree/main/doc/entities).
+//! for more information, especially the [entity documentation](https://github.com/unfoldedcircle/core-api/tree/main/doc/entities).
 //!
 //! All variants will be serialized in `snake_case`.
 
