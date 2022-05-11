@@ -21,7 +21,7 @@ use crate::{EntityType, REGEX_ID_CHARS};
 /// value(s). The immediate `result` response is to acknowledge the command or to return any immediate failures in
 /// case the driver already knows it's unable to perform the command due to device communication issues etc.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct EntityCommand {
     pub device_id: Option<String>,
     pub entity_type: EntityType,
@@ -36,7 +36,7 @@ pub struct EntityCommand {
 /// entity is updated manually through a user or an external system. This keeps the remote in sync with the real
 /// state of the entity without the need of constant polling.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct EntityChange {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,

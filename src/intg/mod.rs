@@ -24,7 +24,7 @@ pub mod ws;
 pub use entity::*;
 
 /// Integration driver version information.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationVersion {
     /// Implemented API version.
     pub api: String,
@@ -37,7 +37,7 @@ pub struct IntegrationVersion {
 /// Subscribe to entity state change events to receive `entity_change` events from the integration
 /// driver.  
 /// If no entity IDs are specified then events for all available entities are sent to the remote.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SubscribeEvents {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
@@ -49,7 +49,7 @@ pub struct SubscribeEvents {
 ///
 /// Provides integration instance information.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationStatus {
     /// Integration instance identifier.  
     pub integration_id: String,
@@ -68,7 +68,7 @@ pub struct IntegrationStatus {
 ///
 /// This data structure is intended for driver overview pages.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationDriverInfo {
     /// Integration driver identifier.  
     pub driver_id: String,
@@ -95,7 +95,7 @@ pub struct IntegrationDriverInfo {
 /// **Attention:** For now this is just a 1:1 relationship until the multi-device setup is finalized
 /// in the API!
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationDriver {
     /// Unique driver identifier.  
     /// Provided by the user or during driver registration. Otherwise a generated UUID.
@@ -148,7 +148,7 @@ pub struct IntegrationDriver {
 /// operations with field validations.
 /// The create operation will check required fields in the original model.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize, Validate)]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct IntegrationDriverUpdate {
     /// Integration driver identifier.  
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
@@ -186,7 +186,7 @@ pub struct IntegrationDriverUpdate {
 
 /// Developer information for an integration driver.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize, Validate)]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct DriverDeveloper {
     #[validate(length(max = 100, message = "Invalid length (max = 100)"))]
     pub name: Option<String>,
@@ -202,7 +202,7 @@ pub struct DriverDeveloper {
 ///
 /// An integration instance represents a configured integration driver.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Integration {
     /// Unique integration identifier.  
     /// Provided by the user or during driver registration. Otherwise a generated UUID.
@@ -231,7 +231,7 @@ pub struct Integration {
 /// operations with field validations.
 /// The create operation will check required fields in the original model.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize, Validate)]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct IntegrationUpdate {
     /// Unique integration instance identifier. ID is set by the system.
     /// This field cannot be updated

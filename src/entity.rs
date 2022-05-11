@@ -39,6 +39,7 @@ pub enum EntityType {
 /// Button features.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -56,6 +57,7 @@ pub enum ButtonFeature {
 /// Button entity commands.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -73,6 +75,7 @@ pub enum ButtonCommand {
 /// Switch features.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -91,6 +94,7 @@ pub enum SwitchFeature {
 /// Switch entity commands.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -110,6 +114,7 @@ pub enum SwitchCommand {
 /// Switch entity device classes.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -130,6 +135,7 @@ pub enum SwitchDeviceClass {
 /// Climate entity features.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -153,6 +159,7 @@ pub enum ClimateFeature {
 /// Climate entity options.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -180,6 +187,7 @@ pub enum ClimateOption {
 /// Climate entity commands.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -202,6 +210,7 @@ pub enum ClimateCommand {
 /// Cover entity features.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -225,6 +234,7 @@ pub enum CoverFeature {
 /// Cover entity commands.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -245,6 +255,7 @@ pub enum CoverCommand {
 /// Cover entity device classes.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -269,6 +280,7 @@ pub enum CoverDeviceClass {
 /// Light entity features.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -290,6 +302,7 @@ pub enum LightFeature {
 /// Light entity commands.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -309,6 +322,7 @@ pub enum LightCommand {
 /// Media player entity features.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -348,6 +362,7 @@ pub enum MediaPlayerFeature {
 /// Media player entity commands.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -382,6 +397,7 @@ pub enum MediaPlayerCommand {
 /// Media player entity device classes.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -402,6 +418,7 @@ pub enum MediaPlayerDeviceClass {
 /// Sensor entity options.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,
@@ -429,6 +446,7 @@ pub enum SensorOption {
 /// Sensor entity device classes.
 #[derive(
     Debug,
+    Clone,
     strum_macros::AsRefStr,
     strum_macros::Display,
     strum_macros::EnumString,

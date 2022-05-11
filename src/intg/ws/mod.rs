@@ -150,7 +150,7 @@ pub enum DriverEvent {
 
 /// Payload data of a `device_state` event message in `msg_data` property.  
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DeviceStateMsgData {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
@@ -161,7 +161,7 @@ pub struct DeviceStateMsgData {
 ///
 /// This is an optional event and not yet implemented in the core.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct EntityAvailableMsgData {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
@@ -176,7 +176,7 @@ pub struct EntityAvailableMsgData {
 ///  
 /// This is an optional event and not yet implemented in the core.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct EntityRemovedMsgData {
     /// Only required for multi-device integrations.
     pub device_id: Option<String>,
@@ -185,7 +185,7 @@ pub struct EntityRemovedMsgData {
 }
 
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AvailableEntitiesFilter {
     pub device_id: Option<String>,
     pub entity_type: Option<EntityType>,
@@ -193,7 +193,7 @@ pub struct AvailableEntitiesFilter {
 
 /// Payload data of `available_entities` response message in `msg_data` property.
 #[skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize, Validate)]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct AvailableEntitiesMsgData {
     pub filter: Option<AvailableEntitiesFilter>,
     #[validate]
