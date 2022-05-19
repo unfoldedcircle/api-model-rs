@@ -58,8 +58,10 @@ pub struct IntegrationStatus {
     pub name: HashMap<String, String>,
     /// Optional icon identifier of the integration.
     pub icon: Option<String>,
-    /// Device state. This is the last known state of the device.
-    pub state: DeviceState,
+    /// Device state. This is the last known state of the device sent by the integration driver.
+    pub device_state: DeviceState,
+    /// Integration driver connection state.
+    pub driver_state: DriverState,
     /// Integration is enabled
     pub enabled: bool,
 }
@@ -303,8 +305,28 @@ impl From<Integration> for IntegrationUpdate {
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
 pub enum DeviceState {
+    Unknown,
     Connecting,
     Connected,
     Disconnected,
+    Error,
+}
+
+/// Integration driver states.
+///
+/// The intermediate states `Connected` (but not yet authenticated) and `Disconnecting` are omitted.
+/// These states are usually of very short nature and are therefore not reported.
+#[derive(
+    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Deserialize, Serialize,
+)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
+pub enum DriverState {
+    Idle,
+    Connecting,
+    Active,
+    Reconnecting,
     Error,
 }
