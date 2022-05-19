@@ -198,6 +198,28 @@ pub struct DriverDeveloper {
     pub email: Option<String>,
 }
 
+impl From<IntegrationDriver> for IntegrationDriverUpdate {
+    fn from(drv: IntegrationDriver) -> Self {
+        Self {
+            driver_id: Some(drv.driver_id),
+            name: Some(drv.name),
+            driver_url: Some(drv.driver_url),
+            token: drv.token,
+            auth_method: drv.auth_method,
+            version: Some(drv.version),
+            min_core_api: drv.min_core_api,
+            icon: drv.icon,
+            enabled: Some(drv.enabled),
+            description: drv.description,
+            developer: drv.developer,
+            home_page: drv.home_page,
+            device_discovery: Some(drv.device_discovery),
+            setup_data_schema: Some(drv.setup_data_schema),
+            release_date: drv.release_date,
+        }
+    }
+}
+
 /// Integration instance model.
 ///
 /// An integration instance represents a configured integration driver.
@@ -254,6 +276,20 @@ pub struct IntegrationUpdate {
     pub setup_data: Option<Json<serde_json::Map<String, Value>>>,
     #[cfg(not(feature = "sqlx"))]
     pub setup_data: Option<serde_json::Map<String, Value>>,
+}
+
+impl From<Integration> for IntegrationUpdate {
+    fn from(intg: Integration) -> Self {
+        Self {
+            integration_id: Some(intg.integration_id),
+            driver_id: Some(intg.driver_id),
+            device_id: intg.device_id,
+            name: Some(intg.name),
+            icon: intg.icon,
+            enabled: Some(intg.enabled),
+            setup_data: Some(intg.setup_data),
+        }
+    }
 }
 
 /// Integration device states.
