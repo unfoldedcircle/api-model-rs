@@ -89,4 +89,10 @@ pub struct AvailableIntgEntity {
     pub area: Option<String>,
     /// Optional entity options. See entity documentation for available options.
     pub options: Option<serde_json::Map<String, Value>>,
+    /// Optional entity attributes.
+    ///
+    /// If the dynamic entity attributes like `state` are already available, they should be included
+    /// for the entity setup process. Otherwise defaults are used (e.g. `state=UNKNOWN`).   
+    /// See entity documentation for available attributes.
+    pub attributes: Option<serde_json::Map<String, Value>>,
 }
