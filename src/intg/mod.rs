@@ -13,6 +13,7 @@ use serde_json::Value;
 use serde_with::skip_serializing_none;
 #[cfg(feature = "sqlx")]
 use sqlx::types::Json;
+use strum_macros::*;
 use validator::Validate;
 
 use crate::ws::WsAuthentication;
@@ -297,9 +298,7 @@ impl From<Integration> for IntegrationUpdate {
 /// Integration device states.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
-#[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Deserialize, Serialize,
-)]
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Deserialize, Serialize)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
@@ -316,9 +315,7 @@ pub enum DeviceState {
 ///
 /// The intermediate states `Connected` (but not yet authenticated) and `Disconnecting` are omitted.
 /// These states are usually of very short nature and are therefore not reported.
-#[derive(
-    Debug, Clone, strum_macros::Display, strum_macros::EnumString, PartialEq, Deserialize, Serialize,
-)]
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Deserialize, Serialize)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]

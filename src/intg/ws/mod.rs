@@ -6,6 +6,7 @@
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 use std::collections::HashMap;
+use strum_macros::*;
 use validator::Validate;
 
 use crate::intg::{AvailableIntgEntity, DeviceState};
@@ -26,19 +27,10 @@ use crate::EntityType;
 // TODO refactor response message relationship? Use a typed DriverResponse variant as enum data.
 //      --> verify Serde if data can be ignored while (de)serializing. This was the reason for using
 //          the simple strum message approach...
-#[derive(
-    Debug,
-    Clone,
-    strum_macros::AsRefStr,
-    strum_macros::Display,
-    strum_macros::EnumMessage,
-    strum_macros::EnumString,
-    PartialEq,
-    Serialize,
-    Deserialize,
-)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
 pub enum R2Request {
     #[strum(message = "driver_version")]
     GetDriverVersion,
@@ -59,18 +51,10 @@ pub enum R2Request {
 }
 
 /// Remote Two response messages for the integration driver.
-#[derive(
-    Debug,
-    Clone,
-    strum_macros::AsRefStr,
-    strum_macros::Display,
-    strum_macros::EnumString,
-    PartialEq,
-    Serialize,
-    Deserialize,
-)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
 pub enum R2Response {
     Version,
     SupportedEntityTypes,
@@ -80,18 +64,10 @@ pub enum R2Response {
 }
 
 /// Integration specific events emitted from Remote Two
-#[derive(
-    Debug,
-    Clone,
-    strum_macros::AsRefStr,
-    strum_macros::Display,
-    strum_macros::EnumString,
-    PartialEq,
-    Serialize,
-    Deserialize,
-)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
 pub enum R2Event {
     Connect,
     Disconnect,
@@ -103,18 +79,10 @@ pub enum R2Event {
 }
 
 /// Integration driver response messages.
-#[derive(
-    Debug,
-    Clone,
-    strum_macros::AsRefStr,
-    strum_macros::Display,
-    strum_macros::EnumString,
-    PartialEq,
-    Serialize,
-    Deserialize,
-)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
 pub enum DriverResponse {
     Result,
     DriverVersion,
@@ -124,18 +92,10 @@ pub enum DriverResponse {
 }
 
 /// Events emitted from the integration driver
-#[derive(
-    Debug,
-    Clone,
-    strum_macros::AsRefStr,
-    strum_macros::Display,
-    strum_macros::EnumString,
-    PartialEq,
-    Serialize,
-    Deserialize,
-)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
 pub enum DriverEvent {
     AuthRequired,
     DeviceState,
