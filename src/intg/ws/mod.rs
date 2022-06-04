@@ -29,7 +29,7 @@ use crate::EntityType;
 //          the simple strum message approach...
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[derive(AsRefStr, Display, EnumMessage, EnumString, EnumVariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum R2Request {
     #[strum(message = "driver_version")]
