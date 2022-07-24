@@ -26,6 +26,12 @@ pub enum EntityType {
     Light,
     MediaPlayer,
     Sensor,
+    /// Internal entity only at the moment
+    Activity,
+    /// Internal entity only at the moment
+    Macro,
+    /// Internal entity only at the moment
+    Remote,
 }
 
 /// Button features.
@@ -415,4 +421,63 @@ pub enum SensorAttribute {
     State,
     Value,
     Unit,
+}
+
+/// Activity features.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum ActivityFeature {
+    OnOff,
+    Start,
+}
+
+/// Activity entity commands.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum ActivityCommand {
+    On,
+    Off,
+    Start,
+}
+
+/// Macro features.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum MacroFeature {
+    Run,
+}
+
+/// Macro entity commands.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum MacroCommand {
+    Run,
+}
+
+/// Remote features.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum RemoteFeature {
+    OnOff,
+}
+
+/// Remote entity commands.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum RemoteCommand {
+    On,
+    Off,
+    Send,
 }
