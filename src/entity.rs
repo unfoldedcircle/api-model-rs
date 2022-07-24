@@ -52,6 +52,15 @@ pub enum ButtonCommand {
     Push,
 }
 
+/// Button entity attributes.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum ButtonAttribute {
+    State,
+}
+
 /// Switch features.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
