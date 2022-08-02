@@ -83,6 +83,8 @@ pub struct IntegrationDriverInfo {
     /// Optional icon identifier of the integration driver.
     pub icon: Option<String>,
     pub enabled: bool,
+    /// true: multi-instance driver with device discovery, false: single instance driver.
+    pub device_discovery: bool,
 }
 
 /// Integration driver model.
