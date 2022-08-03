@@ -85,6 +85,8 @@ pub struct IntegrationDriverInfo {
     pub enabled: bool,
     /// true: multi-instance driver with device discovery, false: single instance driver.
     pub device_discovery: bool,
+    /// Number of integration instances.
+    pub instance_count: u16,
 }
 
 /// Integration driver model.
@@ -137,6 +139,8 @@ pub struct IntegrationDriver {
     pub home_page: Option<String>,
     /// Driver supports multi-device discovery. **Not yet supported**.
     pub device_discovery: bool,
+    /// Number of integration instances.
+    pub instance_count: Option<u16>,
     /// Driver configuration metadata describing configuration parameters for the web-configurator.
     /// **Not yet finalized**.
     #[cfg(feature = "sqlx")]
