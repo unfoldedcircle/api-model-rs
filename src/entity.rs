@@ -478,6 +478,7 @@ pub enum MacroCommand {
 #[strum(serialize_all = "snake_case")]
 pub enum RemoteFeature {
     OnOff,
+    Send,
 }
 
 /// Remote entity commands.
