@@ -542,7 +542,12 @@ impl WsResultMsgData {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventCategory {
+    /// Device specific events like integration driver status changes
     Device,
+    /// Entity change events
     Entity,
+    /// Remote specific events like configuration changes
     Remote,
+    /// UI change events
+    Ui,
 }
