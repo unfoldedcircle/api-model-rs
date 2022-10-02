@@ -304,7 +304,7 @@ impl From<Integration> for IntegrationUpdate {
 /// Integration device states.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
-#[derive(Debug, Clone, Display, EnumString, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
@@ -321,7 +321,7 @@ pub enum DeviceState {
 ///
 /// The intermediate states `Connected` (but not yet authenticated) and `Disconnecting` are omitted.
 /// These states are usually of very short nature and are therefore not reported.
-#[derive(Debug, Clone, Display, EnumString, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
