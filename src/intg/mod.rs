@@ -52,19 +52,24 @@ pub struct SubscribeEvents {
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationStatus {
+    /// Integration driver identifier.
+    pub driver_id: Option<String>,
     /// Integration instance identifier.  
-    pub integration_id: String,
+    pub integration_id: Option<String>,
     /// Name of the integration driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub name: HashMap<String, String>,
     /// Optional icon identifier of the integration.
     pub icon: Option<String>,
+    pub driver_type: DriverType,
+    /// Integration state.
+    pub state: Option<String>, // TODO state enum
     /// Device state. This is the last known state of the device sent by the integration driver.
-    pub device_state: DeviceState,
+    #[deprecated(note = "Use state instead")]
+    pub device_state: Option<DeviceState>,
     /// Integration driver connection state.
-    pub driver_state: DriverState,
-    /// Integration is enabled
-    pub enabled: bool,
+    #[deprecated(note = "Use state instead")]
+    pub driver_state: Option<DriverState>,
 }
 
 /// Minimal integration driver information.
@@ -78,6 +83,8 @@ pub struct IntegrationDriverInfo {
     /// Name of the driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub name: HashMap<String, String>,
+    pub developer_name: Option<String>,
+    pub driver_type: DriverType,
     pub driver_url: String,
     pub version: String,
     /// Optional icon identifier of the integration driver.
@@ -113,6 +120,7 @@ pub struct IntegrationDriver {
     /// An english text with key `en` should always be provided as fallback option. Otherwise it's
     /// not guaranteed which text will be displayed if the user selected language is not provided.
     pub name: HashMap<String, String>,
+    pub driver_type: DriverType,
     /// WebSocket URL of the integration driver.
     pub driver_url: String,
     /// Optional driver authentication token.
@@ -191,6 +199,19 @@ pub struct IntegrationDriverUpdate {
     #[cfg(not(feature = "sqlx"))]
     pub setup_data_schema: Option<Value>,
     pub release_date: Option<NaiveDate>,
+}
+
+/// Integration driver type.
+///
+/// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
+pub enum DriverType {
+    Local,
+    External,
 }
 
 /// Developer information for an integration driver.
