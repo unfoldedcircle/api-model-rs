@@ -157,6 +157,8 @@ pub struct IntegrationDriver {
     pub setup_data_schema: Value,
     /// Release date of the driver.
     pub release_date: Option<NaiveDate>,
+    /// Current state. `Idle` if the driver is not in use.
+    pub driver_state: Option<DriverState>,
 }
 
 /// Integration driver update model.
@@ -275,6 +277,8 @@ pub struct Integration {
     pub setup_data: Json<serde_json::Map<String, Value>>,
     #[cfg(not(feature = "sqlx"))]
     pub setup_data: serde_json::Map<String, Value>,
+    /// Integration state.
+    pub device_state: Option<DeviceState>,
 }
 
 /// Integration instance update model.
