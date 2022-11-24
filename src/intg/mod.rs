@@ -94,6 +94,8 @@ pub struct IntegrationDriverInfo {
     pub device_discovery: bool,
     /// Number of integration instances.
     pub instance_count: u16,
+    /// Current state. `Idle` if the driver is not in use.
+    pub driver_state: Option<DriverState>,
 }
 
 /// Integration driver model.
