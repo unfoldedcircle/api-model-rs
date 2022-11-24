@@ -354,6 +354,7 @@ pub enum DeviceState {
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
 pub enum DriverState {
+    NotConfigured,
     Idle,
     Connecting,
     Active,
