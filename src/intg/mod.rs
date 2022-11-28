@@ -63,7 +63,7 @@ pub struct IntegrationStatus {
     pub icon: Option<String>,
     pub driver_type: DriverType,
     /// Integration state.
-    pub state: Option<String>, // TODO state enum
+    pub state: Option<IntegrationState>,
     /// Device state. This is the last known state of the device sent by the integration driver.
     #[deprecated(note = "Use state instead")]
     pub device_state: Option<DeviceState>,
@@ -359,5 +359,23 @@ pub enum DriverState {
     Connecting,
     Active,
     Reconnecting,
+    Error,
+}
+
+/// Integration states.
+///
+/// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum IntegrationState {
+    NotConfigured,
+    Unknown,
+    Idle,
+    Connecting,
+    Connected,
+    Disconnected,
+    Reconnecting,
+    Active,
     Error,
 }
