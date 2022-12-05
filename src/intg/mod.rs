@@ -127,10 +127,14 @@ pub struct IntegrationDriver {
     pub driver_url: String,
     /// Optional driver authentication token.
     ///
-    /// Note: the token will not be returned to external clients!
+    /// Note: the token will not be returned to external clients! See `pwd_protected` if a token is
+    /// required.
     pub token: Option<String>,
     /// Authentication method if token is used.
     pub auth_method: Option<WsAuthentication>,
+    /// Driver requires a connection password.
+    /// This field is usually only set if authentication is required
+    pub pwd_protected: Option<bool>,
     /// Driver version, [SemVer](https://semver.org/) preferred.
     pub version: String,
     /// Optional version check: minimum required core API version in the remote.
