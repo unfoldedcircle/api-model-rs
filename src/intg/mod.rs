@@ -187,6 +187,7 @@ pub struct IntegrationDriverUpdate {
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub token: Option<String>,
     pub auth_method: Option<WsAuthentication>,
+    pub pwd_protected: Option<bool>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
     pub version: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
@@ -244,6 +245,7 @@ impl From<IntegrationDriver> for IntegrationDriverUpdate {
             driver_url: Some(drv.driver_url),
             token: drv.token,
             auth_method: drv.auth_method,
+            pwd_protected: drv.pwd_protected,
             version: Some(drv.version),
             min_core_api: drv.min_core_api,
             icon: drv.icon,
