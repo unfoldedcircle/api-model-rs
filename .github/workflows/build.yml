@@ -15,41 +15,35 @@ env:
 
 jobs:
   rustfmt:
+    name: Rustfmt
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
           components: rustfmt
-      - name: Checkout repository
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+
+      - name: Run rustfmt
+        run: cargo fmt --all -- --check
 
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
-      - name: Clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- -D warnings
-      - name: Build
-        run: |
-          cargo --version
-          cargo build
-      - name: Run tests
-        run: cargo test --verbose
+          components: clippy
+
+      - run: cargo test
+
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
 
   dev-release:
     name: Create pre-release
