@@ -12,7 +12,7 @@ use serde_with::skip_serializing_none;
 use strum_macros::*;
 
 /// WebSocket authentication type.
-#[derive(Debug, Clone, AsRefStr, Display, EnumString, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, AsRefStr, Display, EnumString, PartialEq, Eq, Serialize, Deserialize)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
@@ -539,10 +539,15 @@ impl WsResultMsgData {
 /// Event message categories.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventCategory {
+    /// Device specific events like integration driver status changes
     Device,
+    /// Entity change events
     Entity,
+    /// Remote specific events like configuration changes
     Remote,
+    /// UI change events
+    Ui,
 }

@@ -38,6 +38,7 @@ pub struct IntegrationVersion {
 /// Subscribe to entity state change events to receive `entity_change` events from the integration
 /// driver.  
 /// If no entity IDs are specified then events for all available entities are sent to the remote.
+#[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SubscribeEvents {
     /// Only required for multi-device integrations.
@@ -52,19 +53,24 @@ pub struct SubscribeEvents {
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationStatus {
+    /// Integration driver identifier.
+    pub driver_id: Option<String>,
     /// Integration instance identifier.  
-    pub integration_id: String,
+    pub integration_id: Option<String>,
     /// Name of the integration driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub name: HashMap<String, String>,
     /// Optional icon identifier of the integration.
     pub icon: Option<String>,
+    pub driver_type: DriverType,
+    /// Integration state.
+    pub state: Option<IntegrationState>,
     /// Device state. This is the last known state of the device sent by the integration driver.
-    pub device_state: DeviceState,
+    #[deprecated(note = "Use state instead")]
+    pub device_state: Option<DeviceState>,
     /// Integration driver connection state.
-    pub driver_state: DriverState,
-    /// Integration is enabled
-    pub enabled: bool,
+    #[deprecated(note = "Use state instead")]
+    pub driver_state: Option<DriverState>,
 }
 
 /// Minimal integration driver information.
@@ -78,11 +84,19 @@ pub struct IntegrationDriverInfo {
     /// Name of the driver.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix.
     pub name: HashMap<String, String>,
+    pub developer_name: Option<String>,
+    pub driver_type: DriverType,
     pub driver_url: String,
     pub version: String,
     /// Optional icon identifier of the integration driver.
     pub icon: Option<String>,
     pub enabled: bool,
+    /// true: multi-instance driver with device discovery, false: single instance driver.
+    pub device_discovery: bool,
+    /// Number of integration instances.
+    pub instance_count: u16,
+    /// Current state. `Idle` if the driver is not in use.
+    pub driver_state: Option<DriverState>,
 }
 
 /// Integration driver model.
@@ -109,14 +123,19 @@ pub struct IntegrationDriver {
     /// An english text with key `en` should always be provided as fallback option. Otherwise it's
     /// not guaranteed which text will be displayed if the user selected language is not provided.
     pub name: HashMap<String, String>,
+    pub driver_type: DriverType,
     /// WebSocket URL of the integration driver.
     pub driver_url: String,
     /// Optional driver authentication token.
     ///
-    /// Note: the token will not be returned to external clients!
+    /// Note: the token will not be returned to external clients! See `pwd_protected` if a token is
+    /// required.
     pub token: Option<String>,
     /// Authentication method if token is used.
     pub auth_method: Option<WsAuthentication>,
+    /// Driver requires a connection password.
+    /// This field is usually only set if authentication is required
+    pub pwd_protected: Option<bool>,
     /// Driver version, [SemVer](https://semver.org/) preferred.
     pub version: String,
     /// Optional version check: minimum required core API version in the remote.
@@ -135,6 +154,8 @@ pub struct IntegrationDriver {
     pub home_page: Option<String>,
     /// Driver supports multi-device discovery. **Not yet supported**.
     pub device_discovery: bool,
+    /// Number of integration instances.
+    pub instance_count: Option<u16>,
     /// Driver configuration metadata describing configuration parameters for the web-configurator.
     /// **Not yet finalized**.
     #[cfg(feature = "sqlx")]
@@ -143,6 +164,8 @@ pub struct IntegrationDriver {
     pub setup_data_schema: Value,
     /// Release date of the driver.
     pub release_date: Option<NaiveDate>,
+    /// Current state. `Idle` if the driver is not in use.
+    pub driver_state: Option<DriverState>,
 }
 
 /// Integration driver update model.
@@ -165,6 +188,7 @@ pub struct IntegrationDriverUpdate {
     #[validate(length(max = 2048, message = "Invalid length (max = 2048)"))]
     pub token: Option<String>,
     pub auth_method: Option<WsAuthentication>,
+    pub pwd_protected: Option<bool>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
     pub version: Option<String>,
     #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
@@ -185,6 +209,19 @@ pub struct IntegrationDriverUpdate {
     #[cfg(not(feature = "sqlx"))]
     pub setup_data_schema: Option<Value>,
     pub release_date: Option<NaiveDate>,
+}
+
+/// Integration driver type.
+///
+/// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
+pub enum DriverType {
+    Local,
+    External,
 }
 
 /// Developer information for an integration driver.
@@ -209,6 +246,7 @@ impl From<IntegrationDriver> for IntegrationDriverUpdate {
             driver_url: Some(drv.driver_url),
             token: drv.token,
             auth_method: drv.auth_method,
+            pwd_protected: drv.pwd_protected,
             version: Some(drv.version),
             min_core_api: drv.min_core_api,
             icon: drv.icon,
@@ -248,6 +286,8 @@ pub struct Integration {
     pub setup_data: Json<serde_json::Map<String, Value>>,
     #[cfg(not(feature = "sqlx"))]
     pub setup_data: serde_json::Map<String, Value>,
+    /// Integration state.
+    pub device_state: Option<DeviceState>,
 }
 
 /// Integration instance update model.
@@ -298,7 +338,7 @@ impl From<Integration> for IntegrationUpdate {
 /// Integration device states.
 ///
 /// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
-#[derive(Debug, Clone, Display, EnumString, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
@@ -315,15 +355,34 @@ pub enum DeviceState {
 ///
 /// The intermediate states `Connected` (but not yet authenticated) and `Disconnecting` are omitted.
 /// These states are usually of very short nature and are therefore not reported.
-#[derive(Debug, Clone, Display, EnumString, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
 pub enum DriverState {
+    NotConfigured,
     Idle,
     Connecting,
     Active,
     Reconnecting,
+    Error,
+}
+
+/// Integration states.
+///
+/// Variants will be serialized in `SCREAMING_SNAKE_CASE`.
+#[derive(Debug, Clone, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum IntegrationState {
+    NotConfigured,
+    Unknown,
+    Idle,
+    Connecting,
+    Connected,
+    Disconnected,
+    Reconnecting,
+    Active,
     Error,
 }
