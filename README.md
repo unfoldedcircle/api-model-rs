@@ -11,10 +11,10 @@ See our [core-api](https://github.com/unfoldedcircle/core-api) GitHub repository
 
 WebSocket APIs defined with [AsyncAPI](https://www.asyncapi.com/):
 - [Integration API](https://github.com/unfoldedcircle/core-api/tree/main/integration-api)
-- Core API - _not yet published_
+- [Core API](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api)
 
 REST API defined with [OpenAPI](https://www.openapis.org/):
-- Core REST API - _not yet published_
+- [Core REST API](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api)
 
 ## Versioning
 

@@ -1,6 +1,6 @@
 [package]
 name = "uc_api"
-version = "0.6.1-alpha"
+version = "0.7.0-alpha"
 authors = ["Markus Zehnder <markus.z@unfoldedcircle.com>"]
 license = "Apache-2.0"
 description = "Unfolded Circle API model"
