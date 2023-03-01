@@ -38,6 +38,7 @@ pub struct IntegrationVersion {
 /// Subscribe to entity state change events to receive `entity_change` events from the integration
 /// driver.  
 /// If no entity IDs are specified then events for all available entities are sent to the remote.
+#[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SubscribeEvents {
     /// Only required for multi-device integrations.
