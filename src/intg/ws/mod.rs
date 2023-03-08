@@ -48,6 +48,8 @@ pub enum R2Request {
     GetEntityStates,
     #[strum(message = "result")]
     EntityCommand,
+    #[strum(message = "driver_metadata")]
+    GetDriverMetadata,
 }
 
 /// Remote Two response messages for the integration driver.
@@ -89,6 +91,7 @@ pub enum DriverResponse {
     DeviceSetupComplete,
     AvailableEntities,
     EntityStates,
+    DriverMetadata,
 }
 
 /// Events emitted from the integration driver
