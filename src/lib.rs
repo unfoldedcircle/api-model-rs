@@ -22,10 +22,10 @@
 //!
 //! WebSocket APIs:
 //! - [Integration AsyncAPI](https://github.com/unfoldedcircle/core-api/tree/main/integration-api)
-//! - Core AsyncAPI - _not yet published_
+//! - [Core AsyncAPI](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api) - temporary location!
 //!
 //! REST API:
-//! - Core OpenAPI - _not yet published_
+//! - [Core OpenAPI](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api) - temporary location!
 //!
 
 // Note: unfortunately the validator crate doesn't allow to use variables or constants for repeating
@@ -44,6 +44,7 @@ use regex::Regex;
 pub mod core;
 mod entity;
 pub mod intg;
+pub mod util;
 pub mod ws;
 
 pub use entity::*;
