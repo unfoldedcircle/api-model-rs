@@ -5,24 +5,25 @@
 //!
 //! See `ws` sub module for WebSocket specific message structures.
 
-use std::collections::HashMap;
+mod entity;
+pub mod ws;
 
+pub use entity::*;
+
+use crate::model::intg::{
+    IntegrationSetupError, IntegrationSetupState, RequireUserAction, SetupChangeEventType,
+};
+use crate::ws::WsAuthentication;
+use crate::{REGEX_ICON_ID, REGEX_ID_CHARS};
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
 #[cfg(feature = "sqlx")]
 use sqlx::types::Json;
+use std::collections::HashMap;
 use strum_macros::*;
 use validator::Validate;
-
-use crate::ws::WsAuthentication;
-use crate::{REGEX_ICON_ID, REGEX_ID_CHARS};
-
-mod entity;
-pub mod ws;
-
-pub use entity::*;
 
 /// Integration driver version information.
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -97,6 +98,37 @@ pub struct IntegrationDriverInfo {
     pub instance_count: u16,
     /// Current state. `Idle` if the driver is not in use.
     pub driver_state: Option<DriverState>,
+}
+
+/// Message data payload of `setup_driver`.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct SetupDriver {
+    pub setup_data: HashMap<String, String>,
+}
+
+/// Message data payload of `driver_setup_change`.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct DriverSetupChange {
+    pub event_type: SetupChangeEventType,
+    pub state: IntegrationSetupState,
+    pub error: Option<IntegrationSetupError>,
+    pub require_user_action: Option<RequireUserAction>,
+}
+
+/// Message data payload of `set_driver_user_data`
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum IntegrationSetup {
+    /// User provided input values of a settings page.
+    ///
+    /// Key is the input field identifier, value the provided value in string format.
+    InputValues(HashMap<String, String>),
+    /// User confirmation.
+    ///
+    /// Attention: value is always true!
+    /// If the user didn't confirm the setup settings page, the setup flow is aborted.
+    Confirm(bool),
 }
 
 /// Integration driver model.

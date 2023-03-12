@@ -44,6 +44,7 @@ use regex::Regex;
 pub mod core;
 mod entity;
 pub mod intg;
+pub mod model;
 pub mod util;
 pub mod ws;
 
