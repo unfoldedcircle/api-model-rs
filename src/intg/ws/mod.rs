@@ -36,8 +36,6 @@ pub enum R2Request {
     GetDriverVersion,
     // returns an event instead of a response message
     GetDeviceState,
-    #[strum(message = "device_setup_complete")]
-    SetupDevice,
     #[strum(message = "available_entities")]
     GetAvailableEntities,
     #[strum(message = "result")]
@@ -50,6 +48,10 @@ pub enum R2Request {
     EntityCommand,
     #[strum(message = "driver_metadata")]
     GetDriverMetadata,
+    #[strum(message = "result")]
+    SetupDriver,
+    #[strum(message = "result")]
+    SetDriverUserData,
 }
 
 /// Remote Two response messages for the integration driver.
@@ -62,7 +64,6 @@ pub enum R2Response {
     SupportedEntityTypes,
     ConfiguredEntities,
     LocalizationCfg,
-    SetupUserAction,
 }
 
 /// Integration specific events emitted from Remote Two
@@ -75,9 +76,7 @@ pub enum R2Event {
     Disconnect,
     EnterStandby,
     ExitStandby,
-    StartDiscovery,
-    StopDiscovery,
-    AbortDeviceSetup,
+    AbortDriverSetup,
 }
 
 /// Integration driver response messages.
@@ -88,7 +87,6 @@ pub enum R2Event {
 pub enum DriverResponse {
     Result,
     DriverVersion,
-    DeviceSetupComplete,
     AvailableEntities,
     EntityStates,
     DriverMetadata,
@@ -102,13 +100,10 @@ pub enum DriverResponse {
 pub enum DriverEvent {
     AuthRequired,
     DeviceState,
-    DeviceSetupProgress,
-    AbortDeviceSetup,
     EntityChange,
     EntityAvailable,
     EntityRemoved,
-    DiscoveredDevice,
-    DiscoveryFinished,
+    DriverSetupChange,
 }
 
 /// Payload data of a `device_state` event message in `msg_data` property.  
