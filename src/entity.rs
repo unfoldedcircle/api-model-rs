@@ -479,6 +479,7 @@ pub enum MacroCommand {
 pub enum RemoteFeature {
     OnOff,
     Send,
+    StopSend,
 }
 
 /// Remote entity commands.
@@ -490,4 +491,5 @@ pub enum RemoteCommand {
     On,
     Off,
     Send,
+    StopSend,
 }
