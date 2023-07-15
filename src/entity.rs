@@ -303,6 +303,20 @@ pub enum MediaPlayerFeature {
     MediaAlbum,
     MediaImageUrl,
     MediaType,
+    /// Directional pad navigation, provides cursor_up, _down, _left, _right, _enter commands.
+    DPad,
+    /// Home navigation support with home & back commands.
+    Home,
+    /// Menu navigation support with menu & back commands.
+    Menu,
+    /// Color button support for function_red, _green, _yellow, _blue commands.
+    ColorButtons,
+    /// Channel zapping support with channel_up and _down commands.
+    ChannelSwitcher,
+    /// Media playback sources or inputs can be selected.
+    SelectSource,
+    /// Sound modes can be selected, e.g. stereo or surround.
+    SelectSoundMode,
 }
 
 /// Media player entity commands.
@@ -329,6 +343,32 @@ pub enum MediaPlayerCommand {
     Unmute,
     Repeat,
     Shuffle,
+    ChannelUp,
+    ChannelDown,
+    /// Directional pad up
+    CursorUp,
+    /// Directional pad down
+    CursorDown,
+    /// Directional pad left
+    CursorLeft,
+    /// Directional pad right
+    CursorRight,
+    /// Directional pad enter
+    CursorEnter,
+    FunctionRed,
+    FunctionGreen,
+    FunctionYellow,
+    FunctionBlue,
+    /// Home menu
+    Home,
+    /// General menu
+    Menu,
+    /// Back / exit function for menu navigation.
+    Back,
+    /// Select media playback source or input from the available sources.
+    SelectSource,
+    /// Select a sound mode from the available modes.
+    SelectSoundMode,
 }
 
 /// Media player entity device classes.
@@ -339,8 +379,14 @@ pub enum MediaPlayerCommand {
 pub enum MediaPlayerDeviceClass {
     /// Audio-video receiver.
     Receiver,
+    /// Set-top box for multichannel video and media playback.
+    SetTopBox,
     /// Smart speakers or stereo device.
     Speaker,
+    /// Device for media streaming services.
+    StreamingBox,
+    /// Television device.
+    TV,
 }
 
 /// Media player entity options.
@@ -374,7 +420,9 @@ pub enum MediaPlayerAttribute {
     Repeat,
     Shuffle,
     Source,
-    SourceMode,
+    SourceList,
+    SoundMode,
+    SoundModeList,
 }
 
 /// Sensor entity options.
@@ -479,6 +527,7 @@ pub enum MacroCommand {
 pub enum RemoteFeature {
     OnOff,
     Send,
+    StopSend,
 }
 
 /// Remote entity commands.
@@ -490,4 +539,5 @@ pub enum RemoteCommand {
     On,
     Off,
     Send,
+    StopSend,
 }
