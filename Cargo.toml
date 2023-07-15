@@ -1,6 +1,6 @@
 [package]
 name = "uc_api"
-version = "0.7.1-alpha"
+version = "0.8.0-alpha"
 authors = ["Markus Zehnder <markus.z@unfoldedcircle.com>"]
 license = "Apache-2.0"
 description = "Unfolded Circle API model"
@@ -11,7 +11,7 @@ repository = "https://github.com/unfoldedcircle/api-model-rs"
 # JSON (de)serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_with = "2"
+serde_with = "3"
 
 chrono = { version = "0.4" , features = ["serde"] }
 
@@ -26,9 +26,10 @@ regex = "1"
 lazy_static = "1"
 
 [dependencies.sqlx]
-# ATTENTION: 0.6.1 is broken! Compilation takes forever and uses massive amounts of RAM. At 30 GB I killed it...
+# ATTENTION: 0.6.x versions are broken! Compilation takes forever and uses massive amounts of RAM. At 30 GB I killed it...
 # Issue: https://github.com/launchbadge/sqlx/issues/1921
 # Possible PR: https://github.com/launchbadge/sqlx/pull/1946
+# Next update attempt is with 0.7.x
 version = "0.5"
 default-features = false
 features = [
