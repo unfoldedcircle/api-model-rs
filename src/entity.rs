@@ -304,6 +304,8 @@ pub enum MediaPlayerFeature {
     MediaImageUrl,
     MediaType,
     /// Directional pad navigation, provides cursor_up, _down, _left, _right, _enter commands.
+    #[serde(rename = "dpad")]
+    #[strum(serialize = "dpad")]
     DPad,
     /// Home navigation support with home & back commands.
     Home,
@@ -540,4 +542,32 @@ pub enum RemoteCommand {
     Off,
     Send,
     StopSend,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::MediaPlayerFeature;
+    use serde::{Deserialize, Serialize};
+    use std::str::FromStr;
+
+    // make sure DPad variant is serialized as `dpad` and not as `d_pad`
+    #[test]
+    fn deserialize_mediaplayer_feature_with_strum() {
+        let feature = MediaPlayerFeature::DPad;
+        assert_eq!("dpad", feature.as_ref());
+        assert_eq!(feature, MediaPlayerFeature::from_str("dpad").unwrap());
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct FeatureTest {
+        pub feature: MediaPlayerFeature,
+    }
+
+    #[test]
+    fn deserialize_mediaplayer_feature() {
+        let json = serde_json::json!({ "feature": "dpad" });
+        let test: FeatureTest = serde_json::from_value(json).expect("Invalid json message");
+
+        assert_eq!(MediaPlayerFeature::DPad, test.feature);
+    }
 }
