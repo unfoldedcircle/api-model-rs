@@ -29,9 +29,9 @@ use validator::Validate;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationVersion {
     /// Implemented API version.
-    pub api: String,
+    pub api: Option<String>,
     /// Version of the integration.
-    pub integration: String,
+    pub integration: Option<String>,
 }
 
 /// Subscribe to events.
