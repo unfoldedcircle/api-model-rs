@@ -542,6 +542,7 @@ pub enum RemoteCommand {
     Off,
     Send,
     StopSend,
+    SendSequence,
 }
 
 #[cfg(test)]
