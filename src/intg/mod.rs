@@ -100,9 +100,20 @@ pub struct IntegrationDriverInfo {
     pub driver_state: Option<DriverState>,
 }
 
-/// Message data payload of `setup_driver`.
+/// Message data payload of `setup_driver` to start driver setup.
+///
+/// If a driver includes a `setup_data_schema` object in its driver metadata, it
+/// enables the dynamic driver setup process. The setup process can be a simple
+/// "start-confirm-done" between the Remote Two and the integration driver, or a fully
+/// dynamic, multistep process with user interactions, where the user has to provide
+/// additional data or select different options.
+#[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SetupDriver {
+    /// Flag to distinguish regular driver setup vs. driver reconfiguration.
+    pub reconfigure: Option<bool>,
+    /// Input values of the initial setup page if it contains input fields and not just text.
+    /// The key is the input field identifier, value contains the input value.
     pub setup_data: HashMap<String, String>,
 }
 
@@ -189,7 +200,6 @@ pub struct IntegrationDriver {
     /// Number of integration instances.
     pub instance_count: Option<u16>,
     /// Driver configuration metadata describing configuration parameters for the web-configurator.
-    /// **Not yet finalized**.
     #[cfg(feature = "sqlx")]
     pub setup_data_schema: Json<Value>,
     #[cfg(not(feature = "sqlx"))]
