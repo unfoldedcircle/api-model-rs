@@ -1,11 +1,12 @@
 [package]
 name = "uc_api"
-version = "0.8.3-alpha"
+version = "0.8.4-beta"
 authors = ["Markus Zehnder <markus.z@unfoldedcircle.com>"]
 license = "Apache-2.0"
 description = "Unfolded Circle API model"
 edition = "2021"
 repository = "https://github.com/unfoldedcircle/api-model-rs"
+rust-version = "1.62"
 
 [dependencies]
 # JSON (de)serialization
@@ -16,8 +17,8 @@ serde_with = "3"
 chrono = { version = "0.4" , features = ["serde"] }
 
 # Helpful macros for working with enums and strings
-strum = "0.24"
-strum_macros = "0.24"
+strum = "0.25"
+strum_macros = "0.25"
 derive_more = "0.99"
 
 validator = "0.16"
