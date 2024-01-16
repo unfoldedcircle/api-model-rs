@@ -528,6 +528,7 @@ pub enum MacroCommand {
 #[strum(serialize_all = "snake_case")]
 pub enum RemoteFeature {
     OnOff,
+    Toggle,
     Send,
     StopSend,
 }
@@ -540,6 +541,7 @@ pub enum RemoteFeature {
 pub enum RemoteCommand {
     On,
     Off,
+    Toggle,
     Send,
     StopSend,
     SendSequence,
