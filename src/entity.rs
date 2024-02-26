@@ -307,10 +307,16 @@ pub enum MediaPlayerFeature {
     #[serde(rename = "dpad")]
     #[strum(serialize = "dpad")]
     DPad,
+    /// Number pad, provides digit_0 .. digit_9 commands.
+    Numpad,
     /// Home navigation support with home & back commands.
     Home,
     /// Menu navigation support with menu & back commands.
     Menu,
+    /// Program guide support with guide & back commands.
+    Guide,
+    /// Information popup / menu support with info & back commands.
+    Info,
     /// Color button support for function_red, _green, _yellow, _blue commands.
     ColorButtons,
     /// Channel zapping support with channel_up and _down commands.
@@ -319,6 +325,16 @@ pub enum MediaPlayerFeature {
     SelectSource,
     /// Sound modes can be selected, e.g. stereo or surround.
     SelectSoundMode,
+    /// The media can be ejected, e.g. a slot-in CD or USB stick.
+    Eject,
+    /// The player supports opening and closing, e.g. a disc tray.
+    OpenClose,
+    /// The player supports selecting or switching the audio track.
+    AudioTrack,
+    /// The player supports selecting or switching subtitles.
+    Subtitle,
+    /// The player has recording capabilities with record, my_recordings, live commands.
+    Record,
 }
 
 /// Media player entity commands.
@@ -326,6 +342,7 @@ pub enum MediaPlayerFeature {
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
+#[allow(non_camel_case_types)]
 pub enum MediaPlayerCommand {
     On,
     Off,
@@ -357,6 +374,16 @@ pub enum MediaPlayerCommand {
     CursorRight,
     /// Directional pad enter
     CursorEnter,
+    Digit_0,
+    Digit_1,
+    Digit_2,
+    Digit_3,
+    Digit_4,
+    Digit_5,
+    Digit_6,
+    Digit_7,
+    Digit_8,
+    Digit_9,
     FunctionRed,
     FunctionGreen,
     FunctionYellow,
@@ -365,12 +392,30 @@ pub enum MediaPlayerCommand {
     Home,
     /// General menu
     Menu,
+    /// Program guide menu.
+    Guide,
+    /// Information menu / what's playing.
+    Info,
     /// Back / exit function for menu navigation.
     Back,
     /// Select media playback source or input from the available sources.
     SelectSource,
     /// Select a sound mode from the available modes.
     SelectSoundMode,
+    /// Start, stop or open recording menu (device dependant).
+    Record,
+    /// Open recordings.
+    MyRecordings,
+    /// Switch to live view.
+    Live,
+    /// Eject media.
+    Eject,
+    /// Open or close.
+    OpenClose,
+    /// Switch or select audio track.
+    AudioTrack,
+    /// Switch or select subtitle.
+    Subtitle,
 }
 
 /// Media player entity device classes.
@@ -397,6 +442,9 @@ pub enum MediaPlayerDeviceClass {
 #[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum MediaPlayerOption {
+    /// Additional commands the media-player supports, which are not covered in the feature list.
+    SimpleCommands,
+    /// Number of available volume steps for the set volume command and UI controls.
     VolumeSteps,
 }
 
@@ -549,7 +597,7 @@ pub enum RemoteCommand {
 
 #[cfg(test)]
 mod tests {
-    use crate::MediaPlayerFeature;
+    use crate::{MediaPlayerCommand, MediaPlayerFeature};
     use serde::{Deserialize, Serialize};
     use std::str::FromStr;
 
@@ -559,6 +607,13 @@ mod tests {
         let feature = MediaPlayerFeature::DPad;
         assert_eq!("dpad", feature.as_ref());
         assert_eq!(feature, MediaPlayerFeature::from_str("dpad").unwrap());
+    }
+
+    #[test]
+    fn deserialize_mediaplayer_command_with_strum() {
+        let cmd = MediaPlayerCommand::Digit_1;
+        assert_eq!("digit_1", cmd.as_ref());
+        assert_eq!(cmd, MediaPlayerCommand::from_str("digit_1").unwrap());
     }
 
     #[derive(Serialize, Deserialize)]
@@ -572,5 +627,18 @@ mod tests {
         let test: FeatureTest = serde_json::from_value(json).expect("Invalid json message");
 
         assert_eq!(MediaPlayerFeature::DPad, test.feature);
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct CommandTest {
+        pub cmd: MediaPlayerCommand,
+    }
+
+    #[test]
+    fn deserialize_mediaplayer_command() {
+        let json = serde_json::json!({ "cmd": "digit_0" });
+        let test: CommandTest = serde_json::from_value(json).expect("Invalid json message");
+
+        assert_eq!(MediaPlayerCommand::Digit_0, test.cmd);
     }
 }
