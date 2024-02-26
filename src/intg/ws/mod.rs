@@ -29,7 +29,7 @@ use crate::EntityType;
 //          the simple strum message approach...
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumMessage, EnumString, EnumVariantNames)] // strum_macros
+#[derive(AsRefStr, Display, EnumMessage, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum R2Request {
     #[strum(message = "driver_version")]
@@ -57,7 +57,7 @@ pub enum R2Request {
 /// Remote Two response messages for the integration driver.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum R2Response {
     Version,
@@ -69,7 +69,7 @@ pub enum R2Response {
 /// Integration specific events emitted from Remote Two
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum R2Event {
     Connect,
@@ -82,7 +82,7 @@ pub enum R2Event {
 /// Integration driver response messages.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum DriverResponse {
     Result,
@@ -95,7 +95,7 @@ pub enum DriverResponse {
 /// Events emitted from the integration driver
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumString, EnumVariantNames)] // strum_macros
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum DriverEvent {
     AuthRequired,
