@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use strum_macros::*;
 use validator::Validate;
 
-use crate::intg::{AvailableIntgEntity, DeviceState};
+use crate::intg::{AvailableIntgEntity, DeviceState, IntegrationVersion};
 use crate::EntityType;
 
 /// Remote Two initiated request messages for the integration driver.
@@ -104,6 +104,15 @@ pub enum DriverEvent {
     EntityAvailable,
     EntityRemoved,
     DriverSetupChange,
+}
+
+/// Payload data of a `driver_version` response message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct DriverVersionMsgData {
+    /// Only required for multi-device integrations.
+    pub name: Option<String>,
+    pub version: Option<IntegrationVersion>,
 }
 
 /// Payload data of a `device_state` event message in `msg_data` property.  
