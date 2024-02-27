@@ -31,7 +31,7 @@ pub struct IntegrationVersion {
     /// Implemented API version.
     pub api: Option<String>,
     /// Version of the integration.
-    pub integration: Option<String>,
+    pub driver: Option<String>,
 }
 
 /// Subscribe to events.
