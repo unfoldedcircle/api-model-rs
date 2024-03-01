@@ -16,7 +16,7 @@ pub enum SetupChangeEventType {
     /// Setup in progress. See `state` enum for current setup state.
     Setup,
     /// Setup finished, either with: `state: OK` for successful setup, or `state: ERROR` if setup
-    /// didn't completed successfully.
+    /// didn't complete successfully.
     Stop,
 }
 
