@@ -338,7 +338,7 @@ pub enum MediaPlayerFeature {
     /// The player has recording capabilities with record, my_recordings, live commands.
     Record,
     /// The player supports a settings menu.
-    Setting,
+    Settings,
 }
 
 /// Media player entity commands.
