@@ -313,6 +313,8 @@ pub enum MediaPlayerFeature {
     Home,
     /// Menu navigation support with menu & back commands.
     Menu,
+    /// Context menu (for example right-clicking or long pressing an item).
+    ContextMenu,
     /// Program guide support with guide & back commands.
     Guide,
     /// Information popup / menu support with info & back commands.
@@ -335,6 +337,8 @@ pub enum MediaPlayerFeature {
     Subtitle,
     /// The player has recording capabilities with record, my_recordings, live commands.
     Record,
+    /// The player supports a settings menu.
+    Setting,
 }
 
 /// Media player entity commands.
@@ -392,6 +396,8 @@ pub enum MediaPlayerCommand {
     Home,
     /// General menu
     Menu,
+    /// Context menu
+    ContextMenu,
     /// Program guide menu.
     Guide,
     /// Information menu / what's playing.
@@ -416,6 +422,8 @@ pub enum MediaPlayerCommand {
     AudioTrack,
     /// Switch or select subtitle.
     Subtitle,
+    /// Settings menu
+    Settings,
 }
 
 /// Media player entity device classes.
@@ -446,6 +454,30 @@ pub enum MediaPlayerOption {
     SimpleCommands,
     /// Number of available volume steps for the set volume command and UI controls.
     VolumeSteps,
+}
+
+/// Media player media types.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+pub enum MediaType {
+    Music,
+    Radio,
+    Tvshow,
+    Movie,
+    Video,
+}
+
+/// Media player repeat modes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum MediaPlayerRepeatMode {
+    Off,
+    All,
+    One,
 }
 
 /// Media player entity attributes.
