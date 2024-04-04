@@ -30,7 +30,6 @@ pub enum EntityType {
     Activity,
     /// Internal entity only at the moment
     Macro,
-    /// Internal entity only at the moment
     Remote,
 }
 
@@ -625,6 +624,15 @@ pub enum RemoteCommand {
     Send,
     StopSend,
     SendSequence,
+}
+
+/// Remote entity attributes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum RemoteAttribute {
+    State,
 }
 
 #[cfg(test)]
