@@ -7,4 +7,7 @@
 //!
 //! TODO data structures will be published after Core API is public.
 
+mod entity;
 pub mod web;
+
+pub use entity::*;

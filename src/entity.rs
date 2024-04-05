@@ -93,12 +93,12 @@ pub enum SwitchDeviceClass {
     Switch,
 }
 
-/// Switch entity options.
+/// Switch entity option fields.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
-pub enum SwitchOption {
+pub enum SwitchOptionField {
     Readable,
 }
 
@@ -126,12 +126,12 @@ pub enum ClimateFeature {
     //Fan Not yet implemented
 }
 
-/// Climate entity options.
+/// Climate entity option fields.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
-pub enum ClimateOption {
+pub enum ClimateOptionField {
     /// The unit of temperature measurement: `CELSIUS`, `FAHRENHEIT`.
     /// If not specified, the remote settings are used.
     TemperatureUnit,
@@ -251,12 +251,12 @@ pub enum LightCommand {
     Toggle,
 }
 
-/// Light entity options.
+/// Light entity option fields.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
-pub enum LightOption {
+pub enum LightOptionField {
     ColorTemperatureSteps,
 }
 
@@ -443,12 +443,12 @@ pub enum MediaPlayerDeviceClass {
     TV,
 }
 
-/// Media player entity options.
+/// Media player entity option fields.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
-pub enum MediaPlayerOption {
+pub enum MediaPlayerOptionField {
     /// Additional commands the media-player supports, which are not covered in the feature list.
     SimpleCommands,
     /// Number of available volume steps for the set volume command and UI controls.
@@ -506,12 +506,12 @@ pub enum MediaPlayerAttribute {
     SoundModeList,
 }
 
-/// Sensor entity options.
+/// Sensor entity option fields.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
-pub enum SensorOption {
+pub enum SensorOptionField {
     /// Label for a custom sensor if `device_class` is not specified or to override a default unit.
     CustomLabel,
     /// Unit label for a custom sensor if `device_class` is not specified or to override a default

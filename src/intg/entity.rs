@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::skip_serializing_none;
+use strum_macros::{AsRefStr, Display, EnumString, VariantNames};
 
 use crate::{EntityType, REGEX_ID_CHARS};
 
@@ -95,4 +96,17 @@ pub struct AvailableIntgEntity {
     /// for the entity setup process. Otherwise defaults are used (e.g. `state=UNKNOWN`).   
     /// See entity documentation for available attributes.
     pub attributes: Option<serde_json::Map<String, Value>>,
+}
+
+/// Integration-API remote entity option fields.
+///
+/// Attention: only valid in the Integration-API data model. See [crate::core::RemoteOptionField]
+/// for the Core-API data model.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum IntgRemoteOptionField {
+    /// Supported commands of the remote.
+    SupportedCommands,
 }
