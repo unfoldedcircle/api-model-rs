@@ -600,32 +600,6 @@ pub enum MacroCommand {
     Run,
 }
 
-/// Remote features.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
-#[strum(serialize_all = "snake_case")]
-pub enum RemoteFeature {
-    OnOff,
-    Toggle,
-    Send,
-    StopSend,
-}
-
-/// Remote entity commands.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
-#[strum(serialize_all = "snake_case")]
-pub enum RemoteCommand {
-    On,
-    Off,
-    Toggle,
-    Send,
-    StopSend,
-    SendSequence,
-}
-
 /// Remote entity attributes.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

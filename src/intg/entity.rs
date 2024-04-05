@@ -110,3 +110,33 @@ pub enum IntgRemoteOptionField {
     /// Supported commands of the remote.
     SupportedCommands,
 }
+
+/// Integration-APU remote features.
+///
+/// Attention: only valid in the Integration-API data model. See [crate::core::RemoteFeature]
+/// for the Core-API data model.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum IntgRemoteFeature {
+    OnOff,
+    Toggle,
+    SendCmd,
+}
+
+/// Integration-API remote entity commands.
+///
+/// Attention: only valid in the Integration-API data model. See [crate::core::RemoteCommand]
+/// for the Core-API data model.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum IntgRemoteCommand {
+    On,
+    Off,
+    Toggle,
+    SendCmd,
+    SendCmdSequence,
+}

@@ -23,3 +23,41 @@ pub enum RemoteOptionField {
     ButtonMapping,
     UserInterface,
 }
+
+/// Core-API remote features.
+///
+/// Attention: only valid in the Core-API data model. See [crate::intg::IntgRemoteFeature]
+/// for the Integration-API data model.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum RemoteFeature {
+    OnOff,
+    Toggle,
+    /// Send IR commands
+    Send,
+    /// Stop sending a repeated IR command
+    StopSend,
+    /// Send arbitrary commands
+    SendCmd,
+}
+
+/// Core-API remote entity commands.
+///
+/// Attention: only valid in the Core-API data model. See [crate::intg::IntgRemoteCommand]
+/// for the Integration-API data model.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum RemoteCommand {
+    On,
+    Off,
+    Toggle,
+    Send,
+    StopSend,
+    SendSequence,
+    SendCmd,
+    SendCmdSequence,
+}
