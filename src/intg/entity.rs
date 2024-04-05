@@ -108,7 +108,7 @@ pub struct AvailableIntgEntity {
 #[strum(serialize_all = "snake_case")]
 pub enum IntgRemoteOptionField {
     /// Supported commands of the remote.
-    SupportedCommands,
+    SimpleCommands,
 }
 
 /// Integration-APU remote features.
