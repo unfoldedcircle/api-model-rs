@@ -109,6 +109,10 @@ pub struct AvailableIntgEntity {
 pub enum IntgRemoteOptionField {
     /// Supported commands of the remote.
     SimpleCommands,
+    /// Optional command mapping for the physical buttons.
+    ButtonMapping,
+    /// Optional user interface definition for the supported commands.
+    UserInterface,
 }
 
 /// Integration-APU remote features.
