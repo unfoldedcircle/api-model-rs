@@ -262,8 +262,12 @@ pub struct IntegrationDriverUpdate {
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(rename_all = "SCREAMING_SNAKE_CASE"))]
 pub enum DriverType {
+    /// Pre-installed integration in the firmware.
     Local,
+    /// External integration on the network.
     External,
+    /// Custom installed integration on the remote.
+    Custom,
 }
 
 /// Developer information for an integration driver.
