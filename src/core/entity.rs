@@ -41,6 +41,8 @@ pub enum RemoteFeature {
     StopSend,
     /// Send arbitrary commands
     SendCmd,
+    /// Send an input key
+    SendKey,
 }
 
 /// Core-API remote entity commands.
@@ -60,4 +62,5 @@ pub enum RemoteCommand {
     SendSequence,
     SendCmd,
     SendCmdSequence,
+    SendKey,
 }
