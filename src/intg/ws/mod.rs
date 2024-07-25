@@ -64,6 +64,7 @@ pub enum R2Response {
     SupportedEntityTypes,
     ConfiguredEntities,
     LocalizationCfg,
+    RuntimeInfo,
 }
 
 /// Integration specific events emitted from Remote Two
@@ -104,6 +105,19 @@ pub enum DriverEvent {
     EntityAvailable,
     EntityRemoved,
     DriverSetupChange,
+}
+
+/// Request messages initiated from the Remote to the integration driver.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum DriverRequest {
+    GetVersion,
+    GetSupportedEntityTypes,
+    GetConfiguredEntities,
+    GetLocalizationCfg,
+    GetRuntimeInfo,
 }
 
 /// Payload data of a `driver_version` response message in `msg_data` property.
@@ -165,4 +179,13 @@ pub struct AvailableEntitiesMsgData {
     pub filter: Option<AvailableEntitiesFilter>,
     #[validate]
     pub available_entities: Vec<AvailableIntgEntity>,
+}
+
+/// Payload data of `runtime_info` response message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct RuntimeInfoMsgData {
+    pub driver_id: String,
+    pub intg_ids: Vec<String>,
+    pub log_id: Option<String>,
 }
