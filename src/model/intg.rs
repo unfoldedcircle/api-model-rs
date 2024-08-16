@@ -7,7 +7,9 @@ use crate::model::settings::{ConfirmationPage, SettingsPage};
 use serde::{Deserialize, Serialize};
 use strum_macros::*;
 
-#[derive(Debug, Clone, AsRefStr, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(
+    Debug, Clone, Copy, AsRefStr, Display, EnumString, PartialEq, Eq, Deserialize, Serialize,
+)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SetupChangeEventType {
@@ -20,7 +22,9 @@ pub enum SetupChangeEventType {
     Stop,
 }
 
-#[derive(Debug, Clone, AsRefStr, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(
+    Debug, Clone, Copy, AsRefStr, Display, EnumString, PartialEq, Eq, Deserialize, Serialize,
+)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum IntegrationSetupState {
@@ -38,7 +42,9 @@ pub enum IntegrationSetupState {
 
 // TODO enhance IntegrationSetupError enum?
 /// More detailed error reason for `state: ERROR` condition.
-#[derive(Debug, Clone, AsRefStr, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(
+    Debug, Clone, Copy, AsRefStr, Display, EnumString, PartialEq, Eq, Deserialize, Serialize,
+)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum IntegrationSetupError {

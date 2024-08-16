@@ -10,7 +10,7 @@ use strum_macros::{AsRefStr, Display, EnumString, VariantNames};
 ///
 /// Attention: only valid in the Core-API data model. See [crate::intg::IntgRemoteOptionField]
 /// for the Integration-API data model.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
@@ -28,7 +28,7 @@ pub enum RemoteOptionField {
 ///
 /// Attention: only valid in the Core-API data model. See [crate::intg::IntgRemoteFeature]
 /// for the Integration-API data model.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
@@ -49,7 +49,7 @@ pub enum RemoteFeature {
 ///
 /// Attention: only valid in the Core-API data model. See [crate::intg::IntgRemoteCommand]
 /// for the Integration-API data model.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
@@ -63,4 +63,42 @@ pub enum RemoteCommand {
     SendCmd,
     SendCmdSequence,
     SendKey,
+}
+
+/// Core-API IR-emitter features.
+///
+/// Attention: only valid in the Core-API data model. See [crate::intg::IntgIrEmitterFeature]
+/// for the Integration-API data model.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum IrEmitterFeature {
+    SendIr,
+}
+
+/// Core-API IR-emitter entity commands.
+///
+/// Attention: only valid in the Core-API data model. See [crate::intg::IntgIrEmitterCommand]
+/// for the Integration-API data model.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum IrEmitterCommand {
+    SendIr,
+    StopIr,
+}
+
+/// Core-API IR-emitter entity option fields.
+///
+/// Attention: only valid in the Core-API data model. See [crate::intg::IntgIrEmitterOptionField]
+/// for the Integration-API data model.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum IrEmitterOptionField {
+    Ports,
+    IrFormats,
 }
