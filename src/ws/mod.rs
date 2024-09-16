@@ -127,6 +127,67 @@ impl WsMessage {
         }
     }
 
+    /// Helper method to create `WsMessage` struct representing a request message without `msg_data`.
+    ///
+    /// # Examples
+    ///
+    /// Serialize to JSON:
+    /// ```
+    /// use uc_api::ws::{WsMessage, WsResultMsgData};
+    /// let response = WsMessage::simple_request(123, "test_request");
+    /// let json = serde_json::to_value(response).unwrap();
+    /// assert_eq!(serde_json::json!({
+    ///     "kind": "req",
+    ///     "id": 123,
+    ///     "msg": "test_request"
+    /// }), json);
+    ///
+    /// ```
+    pub fn simple_request(id: u32, msg: impl Into<String>) -> Self {
+        Self {
+            kind: Some("req".into()),
+            id: Some(id),
+            msg: Some(msg.into()),
+            ..Default::default()
+        }
+    }
+
+    /// Helper method to create `WsMessage` struct representing a request message.
+    ///
+    /// The `msg_data` property will be set from the provided serializable struct.
+    ///
+    /// # Examples
+    ///
+    /// Serialize to JSON:
+    /// ```
+    /// use uc_api::ws::{WsMessage, WsResultMsgData};
+    /// let response = WsMessage::request(123, "test_request", WsResultMsgData::new("42", "testing")).expect("Invalid msg_data");
+    /// let json = serde_json::to_value(response).unwrap();
+    /// assert_eq!(serde_json::json!({
+    ///     "kind": "req",
+    ///     "id": 123,
+    ///     "msg": "test_request",
+    ///     "msg_data": {
+    ///         "code": "42",
+    ///         "message": "testing"
+    ///     }
+    /// }), json);
+    ///
+    /// ```
+    pub fn request<T: serde::Serialize>(
+        id: u32,
+        msg: impl Into<String>,
+        msg_data: T,
+    ) -> Result<Self, serde_json::Error> {
+        Ok(Self {
+            kind: Some("req".into()),
+            id: Some(id),
+            msg: Some(msg.into()),
+            msg_data: Some(serde_json::to_value(msg_data)?),
+            ..Default::default()
+        })
+    }
+
     /// Helper method to create a `WsMessage` struct representing a successful response message.
     ///
     /// The `msg_data` property will be set from the provided json value and the response `code`
@@ -314,6 +375,18 @@ impl WsRequest {
             msg: msg.into(),
             msg_data: Some(msg_data),
         })
+    }
+}
+
+impl From<WsRequest> for WsMessage {
+    fn from(r: WsRequest) -> Self {
+        Self {
+            kind: Some(r.kind),
+            id: Some(r.id),
+            msg: Some(r.msg),
+            msg_data: r.msg_data,
+            ..Default::default()
+        }
     }
 }
 
@@ -522,6 +595,19 @@ impl WsResponse {
     }
 }
 
+impl From<WsResponse> for WsMessage {
+    fn from(r: WsResponse) -> Self {
+        Self {
+            kind: Some(r.kind),
+            req_id: Some(r.req_id),
+            msg: Some(r.msg),
+            code: Some(r.code),
+            msg_data: r.msg_data,
+            ..Default::default()
+        }
+    }
+}
+
 /// Default payload data of `result` response message in `msg_data` property.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WsResultMsgData {
@@ -552,4 +638,47 @@ pub enum EventCategory {
     Remote,
     /// UI change events
     Ui,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn request_to_message_conversion() {
+        let request = WsRequest::new(123, "test_request", WsResultMsgData::new("OK", "testing"))
+            .expect("bug: may not fail");
+        let msg = WsMessage::from(request);
+
+        let json = serde_json::to_value(msg).unwrap();
+        assert_eq!(
+            serde_json::json!({
+                "kind": "req",
+                "id": 123,
+                "msg": "test_request",
+                "msg_data": {
+                    "code": "OK",
+                    "message": "testing"
+                }
+            }),
+            json
+        );
+    }
+
+    #[test]
+    fn response_to_message_conversion() {
+        let response = WsResponse::result(123, 201);
+        let msg = WsMessage::from(response);
+
+        let json = serde_json::to_value(msg).unwrap();
+        assert_eq!(
+            serde_json::json!({
+                "kind": "resp",
+                "req_id": 123,
+                "msg": "result",
+                "code": 201
+            }),
+            json
+        );
+    }
 }
