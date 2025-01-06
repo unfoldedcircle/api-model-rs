@@ -15,6 +15,7 @@ serde_json = "1"
 serde_with = "3"
 
 chrono = { version = "0.4", features = ["serde"] }
+url = { version = "2", features = ["serde"] }
 
 # Helpful macros for working with enums and strings
 strum = "0.26"
