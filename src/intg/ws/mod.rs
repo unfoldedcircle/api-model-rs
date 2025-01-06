@@ -83,6 +83,7 @@ pub enum R2Event {
     ExitStandby,
     AbortDriverSetup,
     Oauth2Authorization,
+    Oauth2Refreshed,
 }
 
 /// Integration driver response messages.
@@ -275,6 +276,16 @@ pub struct DeleteOauth2TokenMsgData {
 }
 
 /// Payload data of `oauth2_authorization` event message in `msg_data` property.
+///
+/// Event that user has authorized the service.
+///
+/// This event is sent after the user has authorized the service. If the authorization was successful, the Core
+/// retrieves the initial token for the integration to retrieve further information and setup the integration driver.
+///
+/// If authorization or token retrieval failed, the error field is set.
+///
+/// The returned token is not saved in the Core. An integration driver has to use `create_oauth2_cfg` to persist
+/// an OAuth2 authorization for future use.
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct Oauth2AuthorizationMsgData {
@@ -304,6 +315,37 @@ impl Oauth2AuthorizationMsgData {
     ) -> Self {
         Self {
             client_data,
+            error_code: Some(code.to_string()),
+            error_description: description.map(|d| d.to_string()),
+            token: None,
+        }
+    }
+}
+
+/// Payload data of `oauth2_refreshed` event message in `msg_data` property.
+///
+/// Event that the OAuth2 token has been refreshed.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct Oauth2RefreshedMsgData {
+    /// Set if the authorization failed.
+    pub error_code: Option<String>,
+    pub error_description: Option<String>,
+    /// Only set if authorization has been successful.
+    pub token: Option<Oauth2Token>,
+}
+
+impl Oauth2RefreshedMsgData {
+    pub fn ok(token: Oauth2Token) -> Self {
+        Self {
+            error_code: None,
+            error_description: None,
+            token: Some(token),
+        }
+    }
+
+    pub fn error<S: ToString, T: ToString>(code: S, description: Option<T>) -> Self {
+        Self {
             error_code: Some(code.to_string()),
             error_description: description.map(|d| d.to_string()),
             token: None,
