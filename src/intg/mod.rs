@@ -158,12 +158,12 @@ pub enum IntegrationSetup {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IntegrationDriver {
     /// Unique driver identifier.  
-    /// Provided by the user or during driver registration. Otherwise a generated UUID.
+    /// Provided by the user or during driver registration. Otherwise, a generated UUID.
     pub driver_id: String,
     /// Name of the driver to display in the UI.  
     /// Key value pairs of language texts. Key: ISO 639-1 code with optional country suffix to
     /// represent a `culture code`. Examples: `en`, `en-UK`, `en-US`, `de`, `de-CH`.  
-    /// An english text with key `en` should always be provided as fallback option. Otherwise it's
+    /// An english text with key `en` should always be provided as fallback option. Otherwise, it's
     /// not guaranteed which text will be displayed if the user selected language is not provided.
     pub name: HashMap<String, String>,
     pub driver_type: DriverType,
@@ -250,6 +250,8 @@ pub struct IntegrationDriverUpdate {
     pub setup_data_schema: Option<Json<Value>>,
     #[cfg(not(feature = "sqlx"))]
     pub setup_data_schema: Option<Value>,
+    /// The driver manifest is only used for registering external drivers. It cannot be updated.
+    pub manifest: Option<DriverManifest>,
     pub release_date: Option<NaiveDate>,
 }
 
@@ -284,6 +286,59 @@ pub struct DriverDeveloper {
     pub email: Option<String>,
 }
 
+/// The driver manifest contains required and optional features for the driver to work.
+///
+/// Furthermore, it can also contain additional metadata for the Core service,
+/// which is required for certain features.
+/// For example OAuth2 configuration data like the authorization and token endpoints.
+/// This data may only be transmitted to the core, but won't be exposed in the driver
+/// management API endpoints.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Deserialize, Serialize, Validate)]
+pub struct DriverManifest {
+    /// Required features of an integration driver.
+    #[validate]
+    #[validate(length(min = 1))]
+    pub features: Option<Vec<DriverFeature>>,
+    pub iot_class: Option<IotClass>,
+}
+
+#[skip_serializing_none]
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize, Validate)]
+pub struct DriverFeature {
+    /// Property specifying a single hardware or software feature used by the driver.
+    /// Valid properties are documented in the integration-API.
+    #[validate(length(min = 4, max = 50, message = "Invalid length (4..50)"))]
+    pub name: String,
+    /// Optional or required feature
+    /// - `true`: (default) indicates that the driver can't function, or isn't designed to function,
+    ///            when the specified feature isn't present on the Remote.
+    /// - `false`: indicates that the driver uses the feature if present on the Remote, but that it
+    ///            is designed to function without the specified feature if necessary.
+    pub required: Option<bool>,
+    /// Optional feature specific data
+    #[cfg(feature = "sqlx")]
+    pub data: Option<Json<Value>>,
+    #[cfg(not(feature = "sqlx"))]
+    pub data: Option<Value>,
+}
+
+/// How the integration connects and communicates with a device or service.
+///
+/// Inspired by [Home Assistant IoT class](https://www.home-assistant.io/blog/2016/02/12/classifying-the-internet-of-things/#classifiers).
+#[derive(Debug, Clone, Copy, Display, EnumString, PartialEq, Eq, Deserialize, Serialize)]
+#[strum(serialize_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[cfg_attr(feature = "sqlx", sqlx(rename_all = "snake_case"))]
+pub enum IotClass {
+    AssumedState,
+    CloudPolling,
+    CloudPush,
+    LocalPolling,
+    LocalPush,
+}
+
 impl From<IntegrationDriver> for IntegrationDriverUpdate {
     fn from(drv: IntegrationDriver) -> Self {
         Self {
@@ -302,6 +357,7 @@ impl From<IntegrationDriver> for IntegrationDriverUpdate {
             home_page: drv.home_page,
             device_discovery: Some(drv.device_discovery),
             setup_data_schema: Some(drv.setup_data_schema),
+            manifest: None,
             release_date: drv.release_date,
         }
     }

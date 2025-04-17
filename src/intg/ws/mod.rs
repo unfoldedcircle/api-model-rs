@@ -7,9 +7,11 @@ use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 use std::collections::HashMap;
 use strum_macros::*;
+use url::Url;
 use validator::Validate;
 
 use crate::intg::{AvailableIntgEntity, DeviceState, IntegrationVersion};
+use crate::model::Oauth2Token;
 use crate::EntityType;
 
 /// Remote Two initiated request messages for the integration driver.
@@ -65,6 +67,8 @@ pub enum R2Response {
     ConfiguredEntities,
     LocalizationCfg,
     RuntimeInfo,
+    Oauth2AuthUrl,
+    Oauth2Token,
 }
 
 /// Integration specific events emitted from Remote Two
@@ -78,6 +82,8 @@ pub enum R2Event {
     EnterStandby,
     ExitStandby,
     AbortDriverSetup,
+    Oauth2Authorization,
+    Oauth2Refreshed,
 }
 
 /// Integration driver response messages.
@@ -118,6 +124,10 @@ pub enum DriverRequest {
     GetConfiguredEntities,
     GetLocalizationCfg,
     GetRuntimeInfo,
+    GenerateOauth2AuthUrl,
+    CreateOauth2Cfg,
+    GetOauth2Token,
+    DeleteOauth2Token,
 }
 
 /// Payload data of a `driver_version` response message in `msg_data` property.
@@ -188,4 +198,157 @@ pub struct RuntimeInfoMsgData {
     pub driver_id: String,
     pub intg_ids: Vec<String>,
     pub log_id: Option<String>,
+}
+
+/// Payload data of `generate_oauth2_auth_url` request message in `msg_data` property.
+///
+/// Request an OAuth2 authorization URL for the user.
+///
+/// A new unique authorization URL is created, which may only be used once. Only one active authorization URL per
+/// integration is allowed. Old URLs will become invalid if multiple calls are made.
+///
+/// Once the user has authorized the integration driver by the authorization server, the `oauth2_authorization`
+/// event is emitted.
+///
+/// The `client_data` dictionary can be used to encode driver specific data into the URL, which will be returned
+/// in the `oauth2_authorization` event. This allows to link the authorization event to internal driver states,
+/// e.g. a setup flow step.
+///
+/// The following data fields are automatically injected by the core and overwritten if set by an integration:
+/// - `intg`: set to the integration driver_id.
+/// - `acc`: set to the default integration name.
+/// - `dev`: set to the device address, used for the authentication callback URL.
+///
+/// ℹ️️ implemented in firmware 2.2.3.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct GenerateOauth2AuthUrlMsgData {
+    /// Additional key-value pairs which should be encoded into the `state` query parameter of the
+    /// authorization request.
+    pub client_data: HashMap<String, String>,
+}
+
+/// Payload data of `oauth2_auth_url` response message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct Oauth2AuthUrlMsgData {
+    pub auth_url: Url,
+}
+
+/// Payload data of `create_oauth2_cfg` request message in `msg_data` property.
+///
+/// Create an OAuth2 configuration entry in the Core.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct CreateOauth2CfgMsgData {
+    /// Token identifier to use for the OAuth2 token
+    #[validate(length(min = 1, max = 512, message = "Invalid length (min = 1, max = 512)"))]
+    pub token_id: String,
+    /// Friendly name of the OAuth2 token
+    #[validate(length(min = 1, max = 50, message = "Invalid length (min = 1, max = 50)"))]
+    pub name: String,
+    /// The OAuth2 token as received in the oauth2_authorization event.
+    pub token: Oauth2Token,
+}
+
+/// Payload data of `get_oauth2_token` request message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct GetOauth2TokenMsgData {
+    pub token_id: String,
+    /// Force a token refresh, no matter if the current token is still valid or not.
+    pub force_refresh: Option<bool>,
+}
+
+/// Payload data of `oauth2_token` response message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct Oauth2TokenMsgData {
+    pub token_id: String,
+    pub token: Oauth2Token,
+}
+
+/// Payload data of `delete_oauth2_token` request message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct DeleteOauth2TokenMsgData {
+    pub token_id: String,
+}
+
+/// Payload data of `oauth2_authorization` event message in `msg_data` property.
+///
+/// Event that user has authorized the service.
+///
+/// This event is sent after the user has authorized the service. If the authorization was successful, the Core
+/// retrieves the initial token for the integration to retrieve further information and setup the integration driver.
+///
+/// If authorization or token retrieval failed, the error field is set.
+///
+/// The returned token is not saved in the Core. An integration driver has to use `create_oauth2_cfg` to persist
+/// an OAuth2 authorization for future use.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct Oauth2AuthorizationMsgData {
+    /// Provided key-value pairs in the authorization request URL.
+    pub client_data: HashMap<String, String>,
+    /// Set if the authorization failed.
+    pub error_code: Option<String>,
+    pub error_description: Option<String>,
+    /// Only set if authorization has been successful.
+    pub token: Option<Oauth2Token>,
+}
+
+impl Oauth2AuthorizationMsgData {
+    pub fn ok(client_data: HashMap<String, String>, token: Oauth2Token) -> Self {
+        Self {
+            client_data,
+            error_code: None,
+            error_description: None,
+            token: Some(token),
+        }
+    }
+
+    pub fn error<S: ToString, T: ToString>(
+        client_data: HashMap<String, String>,
+        code: S,
+        description: Option<T>,
+    ) -> Self {
+        Self {
+            client_data,
+            error_code: Some(code.to_string()),
+            error_description: description.map(|d| d.to_string()),
+            token: None,
+        }
+    }
+}
+
+/// Payload data of `oauth2_refreshed` event message in `msg_data` property.
+///
+/// Event that the OAuth2 token has been refreshed.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct Oauth2RefreshedMsgData {
+    /// Set if the authorization failed.
+    pub error_code: Option<String>,
+    pub error_description: Option<String>,
+    /// Only set if authorization has been successful.
+    pub token: Option<Oauth2Token>,
+}
+
+impl Oauth2RefreshedMsgData {
+    pub fn ok(token: Oauth2Token) -> Self {
+        Self {
+            error_code: None,
+            error_description: None,
+            token: Some(token),
+        }
+    }
+
+    pub fn error<S: ToString, T: ToString>(code: S, description: Option<T>) -> Self {
+        Self {
+            error_code: Some(code.to_string()),
+            error_description: description.map(|d| d.to_string()),
+            token: None,
+        }
+    }
 }
