@@ -490,6 +490,7 @@ pub enum MediaPlayerAttribute {
     Volume,
     Muted,
     MediaPosition,
+    MediaPositionUpdatedAt,
     MediaDuration,
     MediaTitle,
     MediaArtist,
