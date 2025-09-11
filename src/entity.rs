@@ -550,6 +550,8 @@ pub enum SensorDeviceClass {
     Temperature,
     /// Voltage in volt
     Voltage,
+    /// Binary sensor. The specific binary device class is stored in the `unit` attribute.
+    Binary,
 }
 
 /// Sensor entity attributes.
