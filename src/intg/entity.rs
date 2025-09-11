@@ -66,11 +66,11 @@ pub struct AvailableIntgEntity {
         code = "INVALID_LENGTH",
         message = "Invalid length (min = 1, max = 36)"
     ))]
-    #[validate(regex(path = "REGEX_ID_CHARS"))]
+    #[validate(regex(path = "*REGEX_ID_CHARS"))]
     pub entity_id: String,
     /// Optional associated device, only if the integration driver supports multiple devices.
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
-    #[validate(regex(path = "REGEX_ID_CHARS"))]
+    #[validate(regex(path = "*REGEX_ID_CHARS"))]
     pub device_id: Option<String>,
     /// Discriminator value for the concrete entity device type.
     pub entity_type: EntityType,

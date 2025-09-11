@@ -187,7 +187,7 @@ pub struct AvailableEntitiesFilter {
 #[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct AvailableEntitiesMsgData {
     pub filter: Option<AvailableEntitiesFilter>,
-    #[validate]
+    #[validate(nested)]
     pub available_entities: Vec<AvailableIntgEntity>,
 }
 

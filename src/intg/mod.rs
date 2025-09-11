@@ -220,7 +220,7 @@ pub struct IntegrationDriver {
 pub struct IntegrationDriverUpdate {
     /// Integration driver identifier.  
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
-    #[validate(regex(path = "REGEX_ID_CHARS"))]
+    #[validate(regex(path = "*REGEX_ID_CHARS"))]
     pub driver_id: Option<String>,
     // TODO validate HashMap with custom validation function?
     pub name: Option<HashMap<String, String>>,
@@ -240,7 +240,7 @@ pub struct IntegrationDriverUpdate {
     pub icon: Option<String>,
     pub enabled: Option<bool>,
     pub description: Option<HashMap<String, String>>,
-    #[validate]
+    #[validate(nested)]
     pub developer: Option<DriverDeveloper>,
     #[validate(url)]
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
@@ -297,7 +297,7 @@ pub struct DriverDeveloper {
 #[derive(Debug, Clone, Default, Eq, PartialEq, Deserialize, Serialize, Validate)]
 pub struct DriverManifest {
     /// Required features of an integration driver.
-    #[validate]
+    #[validate(nested)]
     #[validate(length(min = 1))]
     pub features: Option<Vec<DriverFeature>>,
     pub iot_class: Option<IotClass>,
@@ -409,12 +409,12 @@ pub struct IntegrationUpdate {
     /// Only required for multi-device integrations.
     /// This field cannot be updated.
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
-    #[validate(regex(path = "REGEX_ID_CHARS", code = "INVALID_CHARACTERS"))]
+    #[validate(regex(path = "*REGEX_ID_CHARS", code = "INVALID_CHARACTERS"))]
     pub device_id: Option<String>,
     pub name: Option<HashMap<String, String>>,
     /// Optional icon identifier of the integration.
     #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
-    #[validate(regex(path = "REGEX_ICON_ID", code = "INVALID_CHARACTERS"))]
+    #[validate(regex(path = "*REGEX_ICON_ID", code = "INVALID_CHARACTERS"))]
     pub icon: Option<String>,
     pub enabled: Option<bool>,
     #[cfg(feature = "sqlx")]

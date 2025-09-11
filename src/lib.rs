@@ -38,7 +38,7 @@
 #[macro_use]
 extern crate validator_derive;
 
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 pub mod core;
@@ -50,8 +50,5 @@ pub mod ws;
 
 pub use entity::*;
 
-lazy_static! {
-    // max length is a dedicated validation for better error messages
-    static ref REGEX_ID_CHARS: Regex = Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap();
-    static ref REGEX_ICON_ID: Regex = Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").unwrap();
-}
+static REGEX_ID_CHARS: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap());
+static REGEX_ICON_ID: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").unwrap());

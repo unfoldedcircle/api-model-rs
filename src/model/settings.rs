@@ -29,7 +29,7 @@ pub struct SettingsPage {
     /// Language specific settings page title.
     pub title: HashMap<String, String>,
     /// One or multiple input field definitions, with optional pre-set values.
-    #[validate]
+    #[validate(nested)]
     pub settings: Vec<Setting>,
 }
 
@@ -160,7 +160,7 @@ pub struct Checkbox {
 pub struct Dropdown {
     /// Pre-selected dropdown id.
     pub value: Option<String>,
-    #[validate]
+    #[validate(nested)]
     pub items: Vec<DropdownItem>,
 }
 
