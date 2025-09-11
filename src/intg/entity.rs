@@ -127,6 +127,7 @@ pub enum IntgRemoteFeature {
     OnOff,
     Toggle,
     SendCmd,
+    StopSend,
 }
 
 /// Integration-API remote entity commands.
@@ -142,6 +143,7 @@ pub enum IntgRemoteCommand {
     Off,
     Toggle,
     SendCmd,
+    StopSend,
     SendCmdSequence,
 }
 
