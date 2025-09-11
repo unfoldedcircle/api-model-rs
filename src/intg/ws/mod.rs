@@ -10,9 +10,9 @@ use strum_macros::*;
 use url::Url;
 use validator::Validate;
 
+use crate::EntityType;
 use crate::intg::{AvailableIntgEntity, DeviceState, IntegrationVersion};
 use crate::model::Oauth2Token;
-use crate::EntityType;
 
 /// Remote Two initiated request messages for the integration driver.
 ///
@@ -187,7 +187,7 @@ pub struct AvailableEntitiesFilter {
 #[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct AvailableEntitiesMsgData {
     pub filter: Option<AvailableEntitiesFilter>,
-    #[validate]
+    #[validate(nested)]
     pub available_entities: Vec<AvailableIntgEntity>,
 }
 

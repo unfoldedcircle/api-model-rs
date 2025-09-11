@@ -4,9 +4,9 @@ version = "0.13.0"
 authors = ["Markus Zehnder <markus.z@unfoldedcircle.com>"]
 license = "Apache-2.0"
 description = "Unfolded Circle API model"
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/unfoldedcircle/api-model-rs"
-rust-version = "1.70"
+rust-version = "1.85"
 
 [dependencies]
 # JSON (de)serialization
@@ -18,14 +18,13 @@ chrono = { version = "0.4", features = ["serde"] }
 url = { version = "2", features = ["serde"] }
 
 # Helpful macros for working with enums and strings
-strum = "0.26"
-strum_macros = "0.26"
-derive_more = "0.99"
+strum = "0.27"
+strum_macros = "0.27"
 
-validator = "0.16"
-validator_derive = "0.16"
+validator = "0.20"
+validator_derive = "0.20"
 regex = "1"
-lazy_static = "1"
+once_cell = "1"
 
 [dependencies.sqlx]
 # ATTENTION: 0.6.x versions are broken! Compilation takes forever and uses massive amounts of RAM. At 30 GB I killed it...
