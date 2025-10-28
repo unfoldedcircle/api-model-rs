@@ -27,11 +27,7 @@ regex = "1"
 once_cell = "1"
 
 [dependencies.sqlx]
-# ATTENTION: 0.6.x versions are broken! Compilation takes forever and uses massive amounts of RAM. At 30 GB I killed it...
-# Issue: https://github.com/launchbadge/sqlx/issues/1921
-# Possible PR: https://github.com/launchbadge/sqlx/pull/1946
-# Next update attempt is with 0.8.x
-version = "0.5"
+version = "0.8.6"
 default-features = false
 features = [
     "chrono",
