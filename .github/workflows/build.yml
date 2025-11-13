@@ -41,7 +41,14 @@ jobs:
         with:
           components: clippy
 
-      - run: cargo test
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install protobuf-compiler -y
+
+      - run: cargo build --features generate_protobuf
+
+      - run: cargo test --features prost
 
       - name: Run clippy
         run: cargo clippy -- -D warnings

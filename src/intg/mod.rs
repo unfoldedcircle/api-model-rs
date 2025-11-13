@@ -6,6 +6,8 @@
 //! See `ws` sub module for WebSocket specific message structures.
 
 mod entity;
+#[cfg(feature = "prost")]
+pub mod proto;
 pub mod ws;
 
 pub use entity::*;

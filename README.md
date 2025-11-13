@@ -1,8 +1,8 @@
 # Unfolded Circle API Models for Rust
 
-This crate provides structs and enums for the [Unfolded Circle Remote Two](https://www.unfoldedcircle.com/) APIs.
+This crate provides structs and enums for the [Unfolded Circle Remote Two/3](https://www.unfoldedcircle.com/) APIs.
 
-The model can be used for user based Rust integration drivers. It is also being used in the Unfolded Circle remote-core
+The model can be used for user-based Rust integration drivers. It is also being used in the Unfolded Circle remote-core
 & simulator implementations to make sure it is up-to-date with the API specifications.
 
 ## API Specifications
@@ -10,10 +10,12 @@ The model can be used for user based Rust integration drivers. It is also being 
 See our [core-api](https://github.com/unfoldedcircle/core-api) GitHub repository.
 
 WebSocket APIs defined with [AsyncAPI](https://www.asyncapi.com/):
+
 - [Integration API](https://github.com/unfoldedcircle/core-api/tree/main/integration-api)
 - [Core API](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api)
 
 REST API defined with [OpenAPI](https://www.openapis.org/):
+
 - [Core REST API](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api)
 
 ## Versioning

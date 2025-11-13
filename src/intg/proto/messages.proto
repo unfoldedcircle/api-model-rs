@@ -1,0 +1,25 @@
+// Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+//
+// Binary message definitions of the Unfolded Circle WebSocket Integration-API for Remote Two/3.
+// These messages are received in binary WebSocket messages.
+
+syntax = "proto3";
+
+package integration;
+option java_package = "com.unfoldedcircle.integration";
+
+import "voice.proto";
+
+// All available integration messages.
+//
+// Allows direct binary WebSocket message serialization and deserialization.
+message IntegrationMessage {
+  oneof message {
+    // Start of an audio stream session.
+    RemoteVoiceBegin voice_begin = 1;
+    // Audio chunk in an audio stream session.
+    RemoteVoiceData voice_data = 2;
+    // End of an audio stream session.
+    RemoteVoiceEnd voice_end = 3;
+  }
+}
