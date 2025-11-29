@@ -71,7 +71,7 @@ pub enum R2Response {
     Oauth2Token,
 }
 
-/// Integration specific events emitted from Remote Two
+/// Integration-specific events emitted from Remote Two
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
@@ -111,6 +111,7 @@ pub enum DriverEvent {
     EntityAvailable,
     EntityRemoved,
     DriverSetupChange,
+    AssistantEvent,
 }
 
 /// Request messages initiated from the Remote to the integration driver.
@@ -210,16 +211,16 @@ pub struct RuntimeInfoMsgData {
 /// Once the user has authorized the integration driver by the authorization server, the `oauth2_authorization`
 /// event is emitted.
 ///
-/// The `client_data` dictionary can be used to encode driver specific data into the URL, which will be returned
-/// in the `oauth2_authorization` event. This allows to link the authorization event to internal driver states,
-/// e.g. a setup flow step.
+/// The `client_data` dictionary can be used to encode driver-specific data into the URL, which will be returned
+/// in the `oauth2_authorization` event. This allows linking the authorization event to internal driver states,
+/// e.g., a setup flow step.
 ///
 /// The following data fields are automatically injected by the core and overwritten if set by an integration:
 /// - `intg`: set to the integration driver_id.
 /// - `acc`: set to the default integration name.
 /// - `dev`: set to the device address, used for the authentication callback URL.
 ///
-/// ℹ️️ implemented in firmware 2.2.3.
+/// ℹ️️ Implemented in firmware 2.2.3.
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize, Validate)]
 pub struct GenerateOauth2AuthUrlMsgData {

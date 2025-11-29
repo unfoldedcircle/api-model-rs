@@ -1,15 +1,20 @@
 // Copyright (c) 2022 Unfolded Circle ApS and contributors
 // SPDX-License-Identifier: Apache-2.0
 
-//! Common entity related data structures used in the Core & Integration APIs.
+//! Common entity-related data structures used in the Core & Integration APIs.
 //!
-//! See [Remote Two API documentation](https://github.com/unfoldedcircle/core-api/tree/main/doc)
+//! See [Remote Two/3 API documentation](https://github.com/unfoldedcircle/core-api/tree/main/doc)
 //! for more information, especially the [entity documentation](https://github.com/unfoldedcircle/core-api/tree/main/doc/entities).
 //!
 //! All variants will be serialized in `snake_case`.
 
+use crate::{REGEX_ID_CHARS, REGEX_LANGUAGE_CODE};
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 use strum_macros::*;
+use validator::Validate;
+
+pub const DEF_VOICE_SAMPLE_RATE: u32 = 16000;
 
 /// Supported entity types.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -32,6 +37,7 @@ pub enum EntityType {
     Macro,
     Remote,
     IrEmitter,
+    VoiceAssistant,
 }
 
 /// Button features.
@@ -137,7 +143,7 @@ pub enum ClimateOptionField {
     /// If not specified, the remote settings are used.
     TemperatureUnit,
     /// Step value for the UI for setting the target temperature.
-    /// Defaults: `CELSIUS` = `0.5`, 'FAHRENHEIT` = `1`. Smallest step size: `0.1`
+    /// Defaults: `CELSIUS` = `0.5`, `FAHRENHEIT` = `1`. Smallest step size: `0.1`
     TargetTemperatureStep,
     /// Maximum temperature to show in the UI for the target temperature range.
     MaxTemperature,
@@ -303,21 +309,21 @@ pub enum MediaPlayerFeature {
     MediaAlbum,
     MediaImageUrl,
     MediaType,
-    /// Directional pad navigation, provides cursor_up, _down, _left, _right, _enter commands.
+    /// Directional pad navigation provides cursor_up, _down, _left, _right, _enter commands.
     #[serde(rename = "dpad")]
     #[strum(serialize = "dpad")]
     DPad,
     /// Number pad, provides digit_0 .. digit_9 commands.
     Numpad,
-    /// Home navigation support with home & back commands.
+    /// Home navigation support with home and back commands.
     Home,
-    /// Menu navigation support with menu & back commands.
+    /// Menu navigation support with menu and back commands.
     Menu,
-    /// Context menu (for example right-clicking or long pressing an item).
+    /// Context menu (for example, right-clicking or long pressing an item).
     ContextMenu,
-    /// Program guide support with guide & back commands.
+    /// Program guide support with guide and back commands.
     Guide,
-    /// Information popup / menu support with info & back commands.
+    /// Information popup / menu support with info and back commands.
     Info,
     /// Color button support for function_red, _green, _yellow, _blue commands.
     ColorButtons,
@@ -325,11 +331,11 @@ pub enum MediaPlayerFeature {
     ChannelSwitcher,
     /// Media playback sources or inputs can be selected.
     SelectSource,
-    /// Sound modes can be selected, e.g. stereo or surround.
+    /// Sound modes can be selected, e.g., stereo or surround.
     SelectSoundMode,
-    /// The media can be ejected, e.g. a slot-in CD or USB stick.
+    /// The media can be ejected, e.g., a slot-in CD or USB stick.
     Eject,
-    /// The player supports opening and closing, e.g. a disc tray.
+    /// The player supports opening and closing, e.g., a disc tray.
     OpenClose,
     /// The player supports selecting or switching the audio track.
     AudioTrack,
@@ -622,11 +628,129 @@ pub enum IrEmitterAttribute {
     State,
 }
 
+/// Voice Assistant features.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum VoiceAssistantFeature {
+    /// Voice command is transcribed and sent back to the Remote in the AssistantEvent::SttResponse event.
+    Transcription,
+    /// Textual response about the performed action with the AssistantEvent::TextResponse event.
+    ResponseText,
+    /// Speech response about the performed action with the AssistantEvent::SpeechResponse event.
+    ResponseSpeech,
+}
+
+/// Voice Assistant entity option fields.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum VoiceAssistantOptionField {
+    AudioCfg,
+    Profiles,
+    PreferredProfile,
+}
+
+/// Voice Assistant entity attributes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum VoiceAssistantAttribute {
+    State,
+}
+
+/// Voice Assistant entity options.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Validate)]
+pub struct VoiceAssistantEntityOptions {
+    #[validate(nested)]
+    pub audio_cfg: Option<AudioConfiguration>,
+    #[validate(nested)]
+    pub profiles: Option<Vec<VoiceAssistantProfile>>,
+    #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
+    pub preferred_profile: Option<String>,
+}
+
+/// Voice Assistant profile.
+#[skip_serializing_none]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Validate)]
+pub struct VoiceAssistantProfile {
+    /// Profile identifier.
+    #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
+    #[validate(regex(path = "*REGEX_ID_CHARS"))]
+    pub id: String,
+    /// Friendly name to show in UI.
+    #[validate(length(min = 1, max = 50, message = "Invalid length (max = 50)"))]
+    pub name: String,
+    /// Optional language code if the profile represents a specific language for speech recognition.
+    #[validate(regex(path = "*REGEX_LANGUAGE_CODE"))]
+    pub language: Option<String>,
+    /// Supported features of this profile if different from the entity features.
+    /// This overwrites the entity features. An empty array means "no features".
+    pub features: Option<Vec<VoiceAssistantFeature>>,
+}
+
+/// Audio stream specification.
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct AudioConfiguration {
+    /// Number of audio channels. Default: 1
+    #[validate(range(min = 1, max = 2))]
+    #[serde(default = "default_audio_channels")]
+    pub channels: u8,
+    /// Audio sample rate in Hz.
+    /// This should be one of the commonly used sample rates: 8000, 11025, 16000, 22050, 24000, 44100
+    /// Other sample rates might not be supported.
+    #[validate(range(min = 8000, max = 48000))]
+    #[serde(default = "default_audio_sample_rate")]
+    pub sample_rate: u32,
+    /// Audio sample format.
+    #[serde(default)]
+    pub sample_format: SampleFormat,
+}
+
+fn default_audio_channels() -> u8 {
+    1
+}
+
+fn default_audio_sample_rate() -> u32 {
+    DEF_VOICE_SAMPLE_RATE
+}
+
+impl Default for AudioConfiguration {
+    fn default() -> Self {
+        Self {
+            channels: default_audio_channels(),
+            sample_rate: default_audio_sample_rate(),
+            sample_format: SampleFormat::default(),
+        }
+    }
+}
+
+/// Audio format specification
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SampleFormat {
+    #[default]
+    /// Signed 16 bit
+    I16,
+    /// Signed 32 bit
+    I32,
+    /// Unsigned 16 bit
+    U16,
+    /// Unsigned 32 bit
+    U32,
+    /// Float 32 bit
+    F32,
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{MediaPlayerCommand, MediaPlayerFeature};
+    use crate::{AudioConfiguration, MediaPlayerCommand, MediaPlayerFeature, SampleFormat};
     use serde::{Deserialize, Serialize};
     use std::str::FromStr;
+    use validator::Validate;
 
     // make sure DPad variant is serialized as `dpad` and not as `d_pad`
     #[test]
@@ -667,5 +791,32 @@ mod tests {
         let test: CommandTest = serde_json::from_value(json).expect("Invalid json message");
 
         assert_eq!(MediaPlayerCommand::Digit_0, test.cmd);
+    }
+
+    #[test]
+    fn deserialize_valid_audio_cfg() {
+        let json =
+            serde_json::json!({ "channels": 2, "sample_rate": 24000, "sample_format": "U16" });
+        let cfg: AudioConfiguration = serde_json::from_value(json).expect("Invalid json message");
+
+        assert_eq!(2, cfg.channels);
+        assert_eq!(24000, cfg.sample_rate);
+        assert_eq!(SampleFormat::U16, cfg.sample_format);
+
+        assert!(
+            cfg.validate().is_ok(),
+            "Audio configuration should be valid"
+        )
+    }
+
+    #[test]
+    fn deserialize_audio_cfg_with_invalid_sample_format() {
+        let json = serde_json::json!({ "sample_format": "I8" });
+        let res = serde_json::from_value::<AudioConfiguration>(json);
+
+        assert!(
+            res.is_err(),
+            "Invalid sample format should result in an error, but got: {res:?}"
+        );
     }
 }

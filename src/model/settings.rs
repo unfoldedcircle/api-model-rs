@@ -1,5 +1,7 @@
 // Copyright (c) 2022 Unfolded Circle ApS and/or its affiliates. All rights reserved. Use is subject to license terms.
 
+//! Shared UI setting elements.
+
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 use std::collections::HashMap;
@@ -9,15 +11,15 @@ use validator::Validate;
 #[skip_serializing_none]
 #[derive(Clone, Debug, Serialize, Deserialize, Validate)]
 pub struct ConfirmationPage {
-    /// Language specific page title.
+    /// Language-specific page title.
     pub title: HashMap<String, String>,
-    /// Language specific message to display between title and image (if supplied).
+    /// Language-specific message to display between title and image (if supplied).
     ///
     /// Supports Markdown formatting.
     pub message1: Option<HashMap<String, String>>,
     /// Optional base64-encoded image (png or jpg).
     pub image: Option<String>,
-    /// Language specific Message to display below message1 or image (if supplied).
+    /// Language-specific Message to display below message1 or image (if supplied).
     ///
     /// Supports Markdown formatting.
     pub message2: Option<HashMap<String, String>>,
@@ -26,7 +28,7 @@ pub struct ConfirmationPage {
 /// Settings definition page, e.g. to configure an integration driver.
 #[derive(Clone, Debug, Serialize, Deserialize, Validate)]
 pub struct SettingsPage {
-    /// Language specific settings page title.
+    /// Language-specific settings page title.
     pub title: HashMap<String, String>,
     /// One or multiple input field definitions, with optional pre-set values.
     #[validate(nested)]
@@ -41,7 +43,7 @@ pub struct Setting {
     /// Unique identifier of the setting to be returned with the entered value.
     #[validate(length(min = 1, max = 50))]
     pub id: String,
-    /// Language specific settings label.
+    /// Language-specific settings label.
     pub label: HashMap<String, String>,
     /// Input field or text information.
     pub field: Field,
@@ -76,7 +78,7 @@ pub struct Number {
     pub steps: Option<i32>,
     /// Number of decimal places. None or 0 = integer value.
     pub decimals: Option<u8>,
-    /// Language specific unit text. Displayed following the input field.
+    /// Language-specific unit text. Displayed following the input field.
     pub unit: Option<HashMap<String, String>>,
 }
 
@@ -137,7 +139,7 @@ pub struct Textarea {
 
 /// Password or pin entry field with the input text hidden from the user.
 ///
-/// Otherwise the same as text input.
+/// Otherwise, the same as text input.
 #[skip_serializing_none]
 #[derive(Clone, Debug, Serialize, Deserialize, Validate)]
 pub struct Password {
@@ -169,7 +171,7 @@ pub struct DropdownItem {
     /// Selection identifier.
     #[validate(length(min = 1, max = 50))]
     pub id: String,
-    /// Language specific text.
+    /// Language-specific text.
     pub label: HashMap<String, String>,
 }
 

@@ -1,14 +1,14 @@
 // Copyright (c) 2022 Unfolded Circle ApS and contributors
 // SPDX-License-Identifier: Apache-2.0
 
-//! # Remote Two API Models
+//! # Remote Two/3 API Models
 //!
-//! This crate provides structs and enums for the [Remote Two APIs](https://github.com/unfoldedcircle/core-api).
+//! This crate provides structs and enums for the [Remote Two/3 APIs](https://github.com/unfoldedcircle/core-api).
 //!
-//! The models can be used for user based Rust integration drivers as the Home-Assistant integration.
-//! _TODO_ add GitHub link once published!
+//! The models can be used for user-based Rust integration drivers as the
+//! [Home-Assistant integration](https://github.com/unfoldedcircle/integration-home-assistant).
 //!
-//! The model is also being used in the remote-core & simulator implementation to make sure it is
+//! The model is also being used in the remote-core and simulator implementation to make sure it is
 //! up-to-date with the API specifications.
 //!
 //! Notes:
@@ -22,14 +22,14 @@
 //!
 //! WebSocket APIs:
 //! - [Integration AsyncAPI](https://github.com/unfoldedcircle/core-api/tree/main/integration-api)
-//! - [Core AsyncAPI](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api) - temporary location!
+//! - [Core AsyncAPI](https://github.com/unfoldedcircle/core-api/tree/main/core-api)
 //!
 //! REST API:
-//! - [Core OpenAPI](https://github.com/unfoldedcircle/core-simulator/tree/main/core-api) - temporary location!
+//! - [Core OpenAPI](https://github.com/unfoldedcircle/core-api/tree/main/core-api)
 //!
 
-// Note: unfortunately the validator crate doesn't allow to use variables or constants for repeating
-// message texts: <https://github.com/Keats/validator/issues/142>. Therefore the text length
+// Note: unfortunately, the validator crate doesn't allow using variables or constants for repeating
+// message texts: <https://github.com/Keats/validator/issues/142>. Therefore, the text length
 // messages are duplicated all over...
 
 #![forbid(non_ascii_idents)]
@@ -50,5 +50,9 @@ pub mod ws;
 
 pub use entity::*;
 
-static REGEX_ID_CHARS: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9-_]{1,}$").unwrap());
-static REGEX_ICON_ID: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").unwrap());
+static REGEX_ID_CHARS: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^[a-zA-Z0-9-_]{1,}$").expect("invalid REGEX_ID_CHARS"));
+static REGEX_ICON_ID: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").expect("invalid REGEX_ICON_ID"));
+static REGEX_LANGUAGE_CODE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^[a-z]{2}(_[A-Z]{2})?$").expect("invalid REGEX_LANGUAGE_CODE"));
