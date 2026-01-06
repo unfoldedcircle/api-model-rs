@@ -37,6 +37,7 @@ pub enum EntityType {
     Macro,
     Remote,
     IrEmitter,
+    Select,
     VoiceAssistant,
 }
 
@@ -743,6 +744,44 @@ pub enum SampleFormat {
     U32,
     /// Float 32 bit
     F32,
+}
+
+/// Select entity features. This entity has no features.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum SelectFeature {}
+
+/// Select entity commands.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum SelectCommand {
+    SelectOption,
+    SelectFirst,
+    SelectLast,
+    SelectNext,
+    SelectPrevious,
+}
+
+/// Select entity option fields. This entity has no options.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum SelectOptionField {}
+
+/// Select entity attributes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum SelectAttribute {
+    State,
+    CurrentOption,
+    Options,
 }
 
 #[cfg(test)]
