@@ -106,7 +106,7 @@ pub struct IntegrationDriverInfo {
 ///
 /// If a driver includes a `setup_data_schema` object in its driver metadata, it
 /// enables the dynamic driver setup process. The setup process can be a simple
-/// "start-confirm-done" between the Remote Two and the integration driver, or a fully
+/// "start-confirm-done" between the Remote Two/3 and the integration driver, or a fully
 /// dynamic, multistep process with user interactions, where the user has to provide
 /// additional data or select different options.
 #[skip_serializing_none]

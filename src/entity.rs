@@ -9,7 +9,7 @@
 //! All variants will be serialized in `snake_case`.
 
 use crate::{REGEX_ID_CHARS, REGEX_LANGUAGE_CODE};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::skip_serializing_none;
 use strum_macros::*;
 use validator::Validate;
@@ -346,6 +346,18 @@ pub enum MediaPlayerFeature {
     Record,
     /// The player supports a settings menu.
     Settings,
+    /// The player supports playing a specific media item.
+    PlayMedia,
+    /// The player supports the play_media action parameter to either play or enqueue.
+    PlayMediaAction,
+    /// The player allows clearing the active playlist.
+    ClearPlaylist,
+    /// The player supports browsing media containers.
+    BrowseMedia,
+    /// The player supports searching for media items.
+    SearchMedia,
+    /// The player provides a list of media classes as filter for searches.
+    SearchMediaClasses,
 }
 
 /// Media player entity commands.
@@ -431,6 +443,10 @@ pub enum MediaPlayerCommand {
     Subtitle,
     /// Settings menu
     Settings,
+    /// Play or enqueue a media item.
+    PlayMedia,
+    /// Remove all items from the playback queue. Current playback behavior is integration-dependent (keep playing the current item or clearing everything).
+    ClearPlaylist,
 }
 
 /// Media player entity device classes.
@@ -463,24 +479,281 @@ pub enum MediaPlayerOptionField {
     VolumeSteps,
 }
 
-/// Media player media types.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Media player media content types.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MediaContentType {
+    Album,
+    App,
+    Apps,
+    Artist,
+    Channel,
+    Channels,
+    Composer,
+    Episode,
+    Game,
+    Genre,
+    Image,
+    Movie,
+    Music,
+    Playlist,
+    Podcast,
+    Radio,
+    Season,
+    Track,
+    TvShow,
+    Url,
+    Video,
+    // Custom content type of the integration driver
+    Other(String),
+}
+
+impl MediaContentType {
+    pub fn as_str(&self) -> &str {
+        self.as_ref()
+    }
+}
+
+impl AsRef<str> for MediaContentType {
+    fn as_ref(&self) -> &str {
+        match self {
+            MediaContentType::Album => "album",
+            MediaContentType::App => "app",
+            MediaContentType::Apps => "apps",
+            MediaContentType::Artist => "artist",
+            MediaContentType::Channel => "channel",
+            MediaContentType::Channels => "channels",
+            MediaContentType::Composer => "composer",
+            MediaContentType::Episode => "episode",
+            MediaContentType::Game => "game",
+            MediaContentType::Genre => "genre",
+            MediaContentType::Image => "image",
+            MediaContentType::Movie => "movie",
+            MediaContentType::Music => "music",
+            MediaContentType::Playlist => "playlist",
+            MediaContentType::Podcast => "podcast",
+            MediaContentType::Radio => "radio",
+            MediaContentType::Season => "season",
+            MediaContentType::Track => "track",
+            MediaContentType::TvShow => "tv_show",
+            MediaContentType::Url => "url",
+            MediaContentType::Video => "video",
+            MediaContentType::Other(s) => s.as_str(),
+        }
+    }
+}
+
+impl From<&str> for MediaContentType {
+    fn from(s: &str) -> Self {
+        match s {
+            "album" => MediaContentType::Album,
+            "app" => MediaContentType::App,
+            "apps" => MediaContentType::Apps,
+            "artist" => MediaContentType::Artist,
+            "channel" => MediaContentType::Channel,
+            "channels" => MediaContentType::Channels,
+            "composer" => MediaContentType::Composer,
+            "episode" => MediaContentType::Episode,
+            "game" => MediaContentType::Game,
+            "genre" => MediaContentType::Genre,
+            "image" => MediaContentType::Image,
+            "movie" => MediaContentType::Movie,
+            "music" => MediaContentType::Music,
+            "playlist" => MediaContentType::Playlist,
+            "podcast" => MediaContentType::Podcast,
+            "radio" => MediaContentType::Radio,
+            "season" => MediaContentType::Season,
+            "track" => MediaContentType::Track,
+            "tv_show" => MediaContentType::TvShow,
+            "url" => MediaContentType::Url,
+            "video" => MediaContentType::Video,
+            other => MediaContentType::Other(other.to_owned()),
+        }
+    }
+}
+
+impl Serialize for MediaContentType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for MediaContentType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(MediaContentType::from(&s[..]))
+    }
+}
+
+/// Media item classes.
+#[derive(Debug, Clone, PartialEq, Eq, Display, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum MediaClass {
+    Album,
+    App,
+    Artist,
+    Channel,
+    Composer,
+    Directory,
+    Episode,
+    Game,
+    Genre,
+    Image,
+    Movie,
+    Music,
+    Playlist,
+    Podcast,
+    Radio,
+    Season,
+    Track,
+    TvShow,
+    Url,
+    Video,
+    // Custom media class of the integration driver
+    Other(String),
+}
+
+impl MediaClass {
+    pub fn as_str(&self) -> &str {
+        self.as_ref()
+    }
+}
+
+impl AsRef<str> for MediaClass {
+    fn as_ref(&self) -> &str {
+        match self {
+            MediaClass::Album => "album",
+            MediaClass::App => "app",
+            MediaClass::Artist => "artist",
+            MediaClass::Channel => "channel",
+            MediaClass::Composer => "composer",
+            MediaClass::Directory => "directory",
+            MediaClass::Episode => "episode",
+            MediaClass::Game => "game",
+            MediaClass::Genre => "genre",
+            MediaClass::Image => "image",
+            MediaClass::Movie => "movie",
+            MediaClass::Music => "music",
+            MediaClass::Playlist => "playlist",
+            MediaClass::Podcast => "podcast",
+            MediaClass::Radio => "radio",
+            MediaClass::Season => "season",
+            MediaClass::Track => "track",
+            MediaClass::TvShow => "tv_show",
+            MediaClass::Url => "url",
+            MediaClass::Video => "video",
+            MediaClass::Other(s) => s.as_str(),
+        }
+    }
+}
+
+impl From<&str> for MediaClass {
+    fn from(s: &str) -> Self {
+        match s {
+            "album" => MediaClass::Album,
+            "app" => MediaClass::App,
+            "artist" => MediaClass::Artist,
+            "channel" => MediaClass::Channel,
+            "composer" => MediaClass::Composer,
+            "directory" => MediaClass::Directory,
+            "episode" => MediaClass::Episode,
+            "game" => MediaClass::Game,
+            "genre" => MediaClass::Genre,
+            "image" => MediaClass::Image,
+            "movie" => MediaClass::Movie,
+            "music" => MediaClass::Music,
+            "playlist" => MediaClass::Playlist,
+            "podcast" => MediaClass::Podcast,
+            "radio" => MediaClass::Radio,
+            "season" => MediaClass::Season,
+            "track" => MediaClass::Track,
+            "tv_show" => MediaClass::TvShow,
+            "url" => MediaClass::Url,
+            "video" => MediaClass::Video,
+            other => MediaClass::Other(other.to_owned()),
+        }
+    }
+}
+
+impl Serialize for MediaClass {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for MediaClass {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(MediaClass::from(&s[..]))
+    }
+}
+
+/// A media item which can be browsed or played.
+#[skip_serializing_none]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Validate)]
+pub struct BrowseMediaItem {
+    /// Unique identifier of the item.
+    pub media_id: String,
+    /// Display name.
+    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    pub title: String,
+    /// Artist name.
+    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    pub artist: Option<String>,
+    /// Album name.
+    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    pub album: Option<String>,
+    /// Media class for further browse, search, or playback actions.
+    pub media_class: Option<MediaClass>,
+    /// Media content type for further browse, search, or playback actions.
+    pub media_type: Option<MediaContentType>,
+    /// If `true`, the item can be browsed (is a container) by using `media_id` and `media_type`.
+    pub can_browse: Option<bool>,
+    /// If `true`, the item can be played directly by using `media_id` and `media_type`.
+    pub can_play: Option<bool>,
+    /// If `true`, a search can be performed on the item by using `media_id` and `media_type`.
+    pub can_search: Option<bool>,
+    /// URL to download the media artwork, or a base64 encoded PNG or JPG image.
+    /// Please use a URL whenever possible. Encoded images should be as small as possible.
+    #[validate(length(min = 1, max = 32768, message = "Invalid length (max = 32768)"))]
+    pub thumbnail: Option<String>,
+    /// Duration in seconds.
+    pub duration: Option<u32>,
+    /// Child items if this item is a container.
+    /// Child items may not contain further child items (only one level of nesting is supported).
+    /// A new browse request must be sent for deeper levels.
+    #[validate(nested)]
+    pub items: Option<Vec<BrowseMediaItem>>,
+}
+
+/// Media play actions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
-pub enum MediaType {
-    Music,
-    Radio,
-    Tvshow,
-    Movie,
-    Video,
+pub enum MediaPlayAction {
+    #[default]
+    PlayNow,
+    PlayNext,
+    AddToQueue,
 }
 
 /// Media player repeat modes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
-#[strum(serialize_all = "snake_case")]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum MediaPlayerRepeatMode {
     Off,
     All,
@@ -502,17 +775,20 @@ pub enum MediaPlayerAttribute {
     MediaTitle,
     MediaArtist,
     MediaAlbum,
+    MediaId,
+    MediaType,
     MediaImageUrl,
     MediaImageUrlSmall,
     MediaImageUrlMedium,
     MediaImageUrlLarge,
-    MediaType,
+    MediaPlaylist,
     Repeat,
     Shuffle,
     Source,
     SourceList,
     SoundMode,
     SoundModeList,
+    SearchMediaClasses,
 }
 
 /// Sensor entity option fields.
