@@ -10,11 +10,11 @@ use strum_macros::*;
 use url::Url;
 use validator::Validate;
 
-use crate::EntityType;
 use crate::intg::{AvailableIntgEntity, DeviceState, IntegrationVersion};
-use crate::model::Oauth2Token;
+use crate::model::{Oauth2Token, Pagination, Paging};
+use crate::{BrowseMediaItem, EntityType, MediaClass, MediaContentType};
 
-/// Remote Two initiated request messages for the integration driver.
+/// Remote Two/3 initiated request messages for the integration driver.
 ///
 /// The corresponding response message name is set with the strum message macro
 ///
@@ -54,9 +54,13 @@ pub enum R2Request {
     SetupDriver,
     #[strum(message = "result")]
     SetDriverUserData,
+    #[strum(message = "media_browse")]
+    BrowseMedia,
+    #[strum(message = "media_browse")]
+    SearchMedia,
 }
 
-/// Remote Two response messages for the integration driver.
+/// Remote Two/3 response messages for the integration driver.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
@@ -71,7 +75,7 @@ pub enum R2Response {
     Oauth2Token,
 }
 
-/// Integration-specific events emitted from Remote Two
+/// Integration-specific events emitted from Remote Two/3
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
@@ -97,6 +101,8 @@ pub enum DriverResponse {
     AvailableEntities,
     EntityStates,
     DriverMetadata,
+    MediaBrowse,
+    MediaSearch,
 }
 
 /// Events emitted from the integration driver
@@ -352,4 +358,87 @@ impl Oauth2RefreshedMsgData {
             token: None,
         }
     }
+}
+
+/// Payload data of `browse_media` request message in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct BrowseMediaMsgData {
+    /// media-player entity ID to browse.
+    pub entity_id: String,
+    /// Optional media content ID to restrict browsing.
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub media_id: Option<String>,
+    /// Optional media content type to restrict browsing.
+    pub media_type: Option<MediaContentType>,
+    /// Optional paging object to limit returned items.
+    #[validate(nested)]
+    pub paging: Option<Paging>,
+}
+
+/// Payload data of `search_media` request message in `msg_data` property.
+///
+/// Search for media items in a media-player entity.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct SearchMediaMsgData {
+    /// media-player entity ID to search in.
+    pub entity_id: String,
+    /// Free text search query.
+    #[validate(length(min = 1, max = 255, message = "Invalid length (1..255)"))]
+    pub query: String,
+    /// Optional media content ID to limit the search scope. E.g., in a previously browsed media item.
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub media_id: Option<String>,
+    /// Optional media content type to limit the search scope. E.g., in a previously browsed media item.
+    pub media_type: Option<MediaContentType>,
+    /// Additional user filter to limit the search scope.
+    #[validate(nested)]
+    pub filter: Option<SearchMediaFilter>,
+    /// Optional paging object to limit returned items.
+    #[validate(nested)]
+    pub paging: Option<Paging>,
+}
+
+/// Filter for media search.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Deserialize, Serialize, Validate)]
+pub struct SearchMediaFilter {
+    /// Optional list of media classes to filter the results.
+    pub media_classes: Option<Vec<MediaClass>>,
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub artist: Option<String>,
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub album: Option<String>,
+}
+
+/// Media browse response in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct BrowseMediaResponseMsgData {
+    /// Media browse result.
+    #[validate(nested)]
+    pub media: Option<BrowseMediaItem>,
+    /// Pagination information for this result page.
+    pub pagination: Pagination,
+}
+
+/// Media search response in `msg_data` property.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct SearchMediaResponseMsgData {
+    /// Media search result.
+    #[validate(nested)]
+    pub media: Vec<BrowseMediaItem>,
+    /// Pagination information for this result page.
+    pub pagination: Pagination,
+}
+
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct GetMediaQueueMsgData {
+    // TODO Media playback queue request in `msg_data` property.
+    /// Optional paging object to limit returned items.
+    #[validate(nested)]
+    pub paging: Option<Paging>,
 }
