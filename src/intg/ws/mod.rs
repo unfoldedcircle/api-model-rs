@@ -12,7 +12,7 @@ use validator::Validate;
 
 use crate::intg::{AvailableIntgEntity, DeviceState, IntegrationVersion};
 use crate::model::{Oauth2Token, Pagination, Paging};
-use crate::{BrowseMediaItem, EntityType, MediaClass, MediaContentType};
+use crate::{BrowseMediaItem, EntityType, MediaClass, MediaContentType, SearchMediaItem};
 
 /// Remote Two/3 initiated request messages for the integration driver.
 ///
@@ -429,7 +429,7 @@ pub struct BrowseMediaResponseMsgData {
 pub struct SearchMediaResponseMsgData {
     /// Media search result.
     #[validate(nested)]
-    pub media: Vec<BrowseMediaItem>,
+    pub media: Vec<SearchMediaItem>,
     /// Pagination information for this result page.
     pub pagination: Pagination,
 }
