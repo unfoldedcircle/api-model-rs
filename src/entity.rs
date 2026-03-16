@@ -708,6 +708,9 @@ pub struct BrowseMediaItem {
     /// Display name.
     #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
     pub title: String,
+    /// Optional subtitle
+    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    pub subtitle: Option<String>,
     /// Artist name.
     #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
     pub artist: Option<String>,
@@ -725,6 +728,9 @@ pub struct BrowseMediaItem {
     /// If `true`, a search can be performed on the item by using `media_id` and `media_type`.
     pub can_search: Option<bool>,
     /// URL to download the media artwork, or a base64 encoded PNG or JPG image.
+    ///
+    /// The preferred size is 480x480 pixels.
+    /// Use the following URI prefix to use a provided icon: `icon://uc:`, for example, `icon://uc:music`.
     /// Please use a URL whenever possible. Encoded images should be as small as possible.
     #[validate(length(min = 1, max = 32768, message = "Invalid length (max = 32768)"))]
     pub thumbnail: Option<String>,
@@ -737,16 +743,69 @@ pub struct BrowseMediaItem {
     pub items: Option<Vec<BrowseMediaItem>>,
 }
 
+/// A media item returned as a search result.
+///
+/// Currently identical in shape to [BrowseMediaItem].
+/// Defined as type to allow search-specific fields (e.g. relevance score) to be added
+/// in the future without a major breaking change.
+pub type SearchMediaItem = BrowseMediaItem;
+
 /// Media play actions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[derive(Debug, Clone, PartialEq, Eq, Display, VariantNames, Default)] // strum_macros
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum MediaPlayAction {
     #[default]
     PlayNow,
     PlayNext,
     AddToQueue,
+    Other(String),
+}
+
+impl MediaPlayAction {
+    pub fn as_str(&self) -> &str {
+        self.as_ref()
+    }
+}
+
+impl AsRef<str> for MediaPlayAction {
+    fn as_ref(&self) -> &str {
+        match self {
+            MediaPlayAction::PlayNow => "PLAY_NOW",
+            MediaPlayAction::PlayNext => "PLAY_NEXT",
+            MediaPlayAction::AddToQueue => "ADD_TO_QUEUE",
+            MediaPlayAction::Other(s) => s.as_str(),
+        }
+    }
+}
+
+impl From<&str> for MediaPlayAction {
+    fn from(s: &str) -> Self {
+        match s {
+            "PLAY_NOW" => MediaPlayAction::PlayNow,
+            "PLAY_NEXT" => MediaPlayAction::PlayNext,
+            "ADD_TO_QUEUE" => MediaPlayAction::AddToQueue,
+            other => MediaPlayAction::Other(other.to_owned()),
+        }
+    }
+}
+
+impl Serialize for MediaPlayAction {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for MediaPlayAction {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(MediaPlayAction::from(&s[..]))
+    }
 }
 
 /// Media player repeat modes.
@@ -766,29 +825,51 @@ pub enum MediaPlayerRepeatMode {
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum MediaPlayerAttribute {
+    /// State of the media player, influenced by the play and power commands.
     State,
+    /// Current volume level.
     Volume,
+    /// Flag if the volume is muted.
     Muted,
+    /// Current media position in seconds.
     MediaPosition,
+    /// Optional timestamp when `media_position` was last updated. Requires integration support.
     MediaPositionUpdatedAt,
+    /// Media duration in seconds.
     MediaDuration,
+    /// Currently playing media information.
     MediaTitle,
+    /// Currently playing media information.
     MediaArtist,
+    /// Currently playing media information.
     MediaAlbum,
+    /// The content ID of media being played.
     MediaId,
+    /// The content type of media being played.
     MediaType,
+    /// URL to retrieve the album art or an image representing what's being played.
     MediaImageUrl,
     MediaImageUrlSmall,
     MediaImageUrlMedium,
     MediaImageUrlLarge,
+    /// Title of Playlist currently playing.
     MediaPlaylist,
+    /// Current repeat mode.
     Repeat,
+    /// Shuffle mode on or off.
     Shuffle,
+    /// Currently selected media or input source.
     Source,
+    /// Available media or input sources.
     SourceList,
+    /// Currently selected sound mode.
     SoundMode,
+    /// Available sound modes.
     SoundModeList,
+    /// List of media classes to use as a filter for `search_media`. Custom classes should be avoided.
     SearchMediaClasses,
+    /// List of supported [MediaPlayAction].
+    PlayMediaAction,
 }
 
 /// Sensor entity option fields.
@@ -1132,6 +1213,37 @@ mod tests {
         assert!(
             res.is_err(),
             "Invalid sample format should result in an error, but got: {res:?}"
+        );
+    }
+
+    #[test]
+    fn test_media_play_action() {
+        use crate::MediaPlayAction;
+
+        // Standard variants
+        let action = MediaPlayAction::PlayNow;
+        assert_eq!(action.as_str(), "PLAY_NOW");
+        let serialized = serde_json::to_string(&action).unwrap();
+        assert_eq!(serialized, "\"PLAY_NOW\"");
+        let deserialized: MediaPlayAction = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized, action);
+
+        // Other variant
+        let action = MediaPlayAction::Other("CUSTOM_ACTION".to_owned());
+        assert_eq!(action.as_str(), "CUSTOM_ACTION");
+        let serialized = serde_json::to_string(&action).unwrap();
+        assert_eq!(serialized, "\"CUSTOM_ACTION\"");
+        let deserialized: MediaPlayAction = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized, action);
+
+        // From string
+        assert_eq!(
+            MediaPlayAction::from("PLAY_NEXT"),
+            MediaPlayAction::PlayNext
+        );
+        assert_eq!(
+            MediaPlayAction::from("SOME_UNKNOWN"),
+            MediaPlayAction::Other("SOME_UNKNOWN".to_owned())
         );
     }
 }
