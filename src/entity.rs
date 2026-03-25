@@ -287,28 +287,51 @@ pub enum LightAttribute {
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum MediaPlayerFeature {
+    /// The media player can be switched on and off.
     OnOff,
+    /// The media player's power state can be toggled.
     Toggle,
+    /// The volume level can be set to a specific level.
     Volume,
+    /// The volume can be adjusted up (louder) and down.
     VolumeUpDown,
+    /// The mute state can be toggled.
     MuteToggle,
+    /// The volume can be muted.
     Mute,
+    /// The volume can be un-muted.
     Unmute,
+    /// The player supports starting and pausing media playback.
     PlayPause,
+    /// The player supports stopping media playback.
     Stop,
+    /// The player supports skipping to the next track.
     Next,
+    /// The player supports returning to the previous track.
     Previous,
+    /// The player supports fast-forwarding the current track.
     FastForward,
+    /// The player supports rewinding the current track.
     Rewind,
+    /// The current track or playlist can be repeated.
     Repeat,
+    /// The player supports random playback / shuffling the current playlist.
     Shuffle,
+    /// The player supports seeking the playback position.
     Seek,
+    /// The player announces the duration of the current media being played.
     MediaDuration,
+    /// The player announces the current position of the media being played.
     MediaPosition,
+    /// The player announces the media title.
     MediaTitle,
+    /// The player announces the media artist.
     MediaArtist,
+    /// The player announces the media album if music is being played.
     MediaAlbum,
+    /// The player provides an image url of the media being played.
     MediaImageUrl,
+    /// The player announces the content type of media being played.
     MediaType,
     /// Directional pad navigation provides cursor_up, _down, _left, _right, _enter commands.
     #[serde(rename = "dpad")]
@@ -367,25 +390,45 @@ pub enum MediaPlayerFeature {
 #[strum(serialize_all = "snake_case")]
 #[allow(non_camel_case_types)]
 pub enum MediaPlayerCommand {
+    /// Switch on media player.
     On,
+    /// Switch off media player.
     Off,
+    /// Toggle the current power state.
     Toggle,
+    /// Toggle play / pause.
     PlayPause,
+    /// Stop playback.
     Stop,
+    /// Go back to previous track.
     Previous,
+    /// Skip to next track.
     Next,
+    /// Fast forward current track.
     FastForward,
+    /// Rewind current track.
     Rewind,
+    /// Seek to given position in current track.
     Seek,
+    /// Set volume to given level.
     Volume,
+    /// Increase volume.
     VolumeUp,
+    /// Decrease volume.
     VolumeDown,
+    /// Toggle mute state.
     MuteToggle,
+    /// Mute volume.
     Mute,
+    /// Unmute volume.
     Unmute,
+    /// Repeat track or playlist.
     Repeat,
+    /// Shuffle playlist or start random playback.
     Shuffle,
+    /// Channel up.
     ChannelUp,
+    /// Channel down.
     ChannelDown,
     /// Directional pad up
     CursorUp,
@@ -397,19 +440,33 @@ pub enum MediaPlayerCommand {
     CursorRight,
     /// Directional pad enter
     CursorEnter,
+    /// Number pad digit 0
     Digit_0,
+    /// Number pad digit 1
     Digit_1,
+    /// Number pad digit 2
     Digit_2,
+    /// Number pad digit 3
     Digit_3,
+    /// Number pad digit 4
     Digit_4,
+    /// Number pad digit 5
     Digit_5,
+    /// Number pad digit 6
     Digit_6,
+    /// Number pad digit 7
     Digit_7,
+    /// Number pad digit 8
     Digit_8,
+    /// Number pad digit 9
     Digit_9,
+    /// Function red
     FunctionRed,
+    /// Function green
     FunctionGreen,
+    /// Function yellow
     FunctionYellow,
+    /// Function blue
     FunctionBlue,
     /// Home menu
     Home,
@@ -427,7 +484,7 @@ pub enum MediaPlayerCommand {
     SelectSource,
     /// Select a sound mode from the available modes.
     SelectSoundMode,
-    /// Start, stop or open recording menu (device dependant).
+    /// Start, stop, or open recording menu (device dependant).
     Record,
     /// Open recordings.
     MyRecordings,
@@ -704,6 +761,7 @@ impl<'de> Deserialize<'de> for MediaClass {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Validate)]
 pub struct BrowseMediaItem {
     /// Unique identifier of the item.
+    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
     pub media_id: String,
     /// Display name.
     #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]

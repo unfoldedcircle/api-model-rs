@@ -394,9 +394,9 @@ pub struct SearchMediaMsgData {
     pub media_id: Option<String>,
     /// Optional media content type to limit the search scope. E.g., in a previously browsed media item.
     pub media_type: Option<MediaContentType>,
-    /// Additional user filter to limit the search scope.
     /// Hint to the integration to return stable media IDs.
     pub stable_ids: Option<bool>,
+    /// Additional user filter to limit the search scope.
     #[validate(nested)]
     pub filter: Option<SearchMediaFilter>,
     /// Optional paging object to limit returned items.
