@@ -760,20 +760,20 @@ impl<'de> Deserialize<'de> for MediaClass {
 #[skip_serializing_none]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Validate)]
 pub struct BrowseMediaItem {
-    /// Unique identifier of the item.
-    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    /// Unique identifier of the item. May only be empty for special items like `root` or non-playable directories.
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
     pub media_id: String,
     /// Display name.
-    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    #[validate(length(min = 1, max = 255, message = "Invalid length (1..255)"))]
     pub title: String,
     /// Optional subtitle
-    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    #[validate(length(min = 1, max = 255, message = "Invalid length (1..255)"))]
     pub subtitle: Option<String>,
     /// Artist name.
-    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    #[validate(length(min = 1, max = 255, message = "Invalid length (1..255)"))]
     pub artist: Option<String>,
     /// Album name.
-    #[validate(length(min = 1, max = 255, message = "Invalid length (max = 255)"))]
+    #[validate(length(min = 1, max = 255, message = "Invalid length (1..255)"))]
     pub album: Option<String>,
     /// Media class for further browse, search, or playback actions.
     pub media_class: Option<MediaClass>,
@@ -790,7 +790,7 @@ pub struct BrowseMediaItem {
     /// The preferred size is 480x480 pixels.
     /// Use the following URI prefix to use a provided icon: `icon://uc:`, for example, `icon://uc:music`.
     /// Please use a URL whenever possible. Encoded images should be as small as possible.
-    #[validate(length(min = 1, max = 32768, message = "Invalid length (max = 32768)"))]
+    #[validate(length(min = 1, max = 32768, message = "Invalid length (1..32768)"))]
     pub thumbnail: Option<String>,
     /// Duration in seconds.
     pub duration: Option<u32>,
