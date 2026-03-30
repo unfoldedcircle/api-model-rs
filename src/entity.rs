@@ -534,6 +534,15 @@ pub enum MediaPlayerOptionField {
     SimpleCommands,
     /// Number of available volume steps for the set volume command and UI controls.
     VolumeSteps,
+    /// Bit-field indicating if the `browse` and `search` commands support stable media IDs:
+    ///
+    /// - Bit 0: `browse` always returns stable ids.
+    /// - Bit 1: `browse` supports stable ids with the `stable_ids` parameter.
+    /// - Bit 2: `search` always returns stable ids.
+    /// - Bit 3: `search` returns stable ids with the `stable_ids` parameter.
+    ///
+    /// Default if not provided: `browse` and `search` always return stable IDs (Bit 0 | Bit 2)
+    StableIdSupport,
 }
 
 /// Media player media content types.
