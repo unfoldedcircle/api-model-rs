@@ -203,6 +203,8 @@ pub struct AvailableIntgEntity {
     #[validate(length(max = 36, message = "Invalid length (max = 36)"))]
     #[validate(regex(path = "*REGEX_ICON_ID"))]
     pub icon: Option<String>,
+    /// Optional description of the entity.
+    pub description: Option<HashMap<String, String>>,
     /// Supported features of the entity.
     /// See entity-specific feature enums and the entity documentation for available features.
     pub features: Option<Vec<String>>,
