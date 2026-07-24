@@ -20,10 +20,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Install toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable as of 2026-07-24 (no version tags; rolling branch)
         with:
           components: rustfmt
 
@@ -34,10 +36,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Install toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable as of 2026-07-24 (no version tags; rolling branch)
         with:
           components: clippy
 
@@ -59,12 +63,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: "lts/*"
 
@@ -75,7 +80,7 @@ jobs:
           cat ${{ env.BUILD_CHANGELOG }}
 
       - name: Upload changelog
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: changelog
           path: ${{ env.BUILD_CHANGELOG }}
@@ -90,7 +95,7 @@ jobs:
 
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
 
       - name: Extract archives from downloaded artifacts
         run: |
@@ -107,8 +112,9 @@ jobs:
 
       # Checkout is required for the next `gh release delete` step
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
+          persist-credentials: false
           path: main
 
       # We have to delete the "latest" release, otherwise `softprops/action-gh-release` will only append the new artifact.
@@ -122,7 +128,7 @@ jobs:
 
       # Use conventional commit changelog, and append the GitHub generated changelog
       - name: Create Pre-Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         if: "!contains(github.ref, 'tags/v')"
         with:
           prerelease: true
@@ -132,7 +138,7 @@ jobs:
           name: "Development Build"
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         if: "contains(github.ref, 'tags/v')"
         with:
           prerelease: false
