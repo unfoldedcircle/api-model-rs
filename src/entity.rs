@@ -1004,6 +1004,7 @@ pub enum SensorAttribute {
 pub enum ActivityFeature {
     OnOff,
     Start,
+    Stop,
 }
 
 /// Activity entity commands.
@@ -1013,8 +1014,12 @@ pub enum ActivityFeature {
 #[strum(serialize_all = "snake_case")]
 pub enum ActivityCommand {
     On,
+    /// Turn off an activity by running the off-sequence
     Off,
+    /// Start an activity by running the on-sequence
     Start,
+    /// Abort a running on- or off-sequence
+    Stop,
 }
 
 /// Macro features.
@@ -1024,6 +1029,7 @@ pub enum ActivityCommand {
 #[strum(serialize_all = "snake_case")]
 pub enum MacroFeature {
     Run,
+    Stop,
 }
 
 /// Macro entity commands.
@@ -1032,7 +1038,10 @@ pub enum MacroFeature {
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum MacroCommand {
+    /// Run a macro
     Run,
+    /// Abort a running macro
+    Stop,
 }
 
 /// Remote entity attributes.
