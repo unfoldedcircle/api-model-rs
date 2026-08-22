@@ -6,7 +6,7 @@ license = "Apache-2.0"
 description = "Unfolded Circle API model"
 edition = "2024"
 repository = "https://github.com/unfoldedcircle/api-model-rs"
-rust-version = "1.85"
+rust-version = "1.88"
 
 [features]
 default = []
