@@ -40,7 +40,6 @@ pub enum IntegrationSetupState {
     Error,
 }
 
-// TODO enhance IntegrationSetupError enum?
 /// More detailed error reason for `state: ERROR` condition.
 #[derive(
     Debug, Clone, Copy, AsRefStr, Display, EnumString, PartialEq, Eq, Deserialize, Serialize,
@@ -49,10 +48,28 @@ pub enum IntegrationSetupState {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum IntegrationSetupError {
     None,
+    /// The driver could not find the device or service to set up.
     NotFound,
+    /// The driver could not connect to the device or service.
     ConnectionRefused,
+    /// The device or service rejected the credentials or the pairing.
     AuthorizationError,
+    /// The driver timed out while communicating with the device or service.
     Timeout,
+    /// The integration driver is not running, not connected, or its connection could not be
+    /// re-established. Check the integration driver service and start the setup again.
+    DriverUnavailable,
+    /// The provided user data was rejected. When reported together with `state: WAIT_USER_ACTION`
+    /// and a `require_user_action` page, the setup continues and the user can correct the input.
+    InvalidInput,
+    /// The setup was stopped by a client.
+    Aborted,
+    /// The driver refused the setup because an integration instance already exists and no
+    /// reconfiguration was requested.
+    AlreadyConfigured,
+    /// The driver does not support the requested operation, e.g. reconfiguration.
+    NotSupported,
+    /// Any other error, see error_message if provided.
     Other,
 }
 
