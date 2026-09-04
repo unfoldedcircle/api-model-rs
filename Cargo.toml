@@ -28,7 +28,7 @@ url = { version = "2", features = ["serde"] }
 strum = "0.27"
 strum_macros = "0.27"
 
-validator = "0.20"
+validator = "0.21"
 validator_derive = "0.20"
 regex = "1"
 once_cell = "1"
