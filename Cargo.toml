@@ -26,7 +26,7 @@ url = { version = "2", features = ["serde"] }
 
 # Helpful macros for working with enums and strings
 strum = "0.27"
-strum_macros = "0.27"
+strum_macros = "0.28"
 
 validator = "0.20"
 validator_derive = "0.20"
