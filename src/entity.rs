@@ -38,6 +38,7 @@ pub enum EntityType {
     Remote,
     IrEmitter,
     Select,
+    Number,
     VoiceAssistant,
 }
 
@@ -1215,6 +1216,59 @@ pub enum SelectAttribute {
     State,
     CurrentOption,
     Options,
+}
+
+/// Number entity features. The `value` feature is always present, even if not specified.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum NumberFeature {
+    Value,
+}
+
+/// Number entity commands.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum NumberCommand {
+    /// Set the value. Parameters: `value`, optional `duration` in milliseconds.
+    SetValue,
+    /// Increase the value by `step` (defaults to the `step` option), clamped at `max`.
+    Increment,
+    /// Decrease the value by `step` (defaults to the `step` option), clamped at `min`.
+    Decrement,
+}
+
+/// Number entity option fields.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum NumberOptionField {
+    /// Minimum value (inclusive). Default: 0
+    Min,
+    /// Maximum value (inclusive). Default: 100
+    Max,
+    /// Step size between values. Default: 1, smallest step size: 0.01
+    Step,
+    /// Number of decimal places to show in the UI. Default: 0
+    Decimals,
+    /// Optional unit label of the value, shown next to the value in the UI.
+    Unit,
+    /// If false, the current value cannot be read from the device. Default: true
+    Readable,
+}
+
+/// Number entity attributes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum NumberAttribute {
+    State,
+    Value,
 }
 
 #[cfg(test)]
