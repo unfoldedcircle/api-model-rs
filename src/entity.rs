@@ -1247,18 +1247,67 @@ pub enum NumberCommand {
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum NumberOptionField {
-    /// Minimum value (inclusive). Default: 0
+    /// Minimum value (inclusive). Default: 0, `null`: no lower limit.
     Min,
-    /// Maximum value (inclusive). Default: 100
+    /// Maximum value (inclusive). Default: 100, `null`: no upper limit.
     Max,
-    /// Step size between values. Default: 1, smallest step size: 0.01
+    /// Step size between values. Default: 1, smallest step size: 0.000001
     Step,
-    /// Number of decimal places to show in the UI. Default: 0
+    /// Number of decimal places to show in the UI: 0..6. Default: 0
     Decimals,
     /// Optional unit label of the value, shown next to the value in the UI.
+    /// Default: unit of the device class.
     Unit,
+    /// Hint for the preferred default representation in the UI. See [NumberDisplayMode].
+    DisplayMode,
     /// If false, the current value cannot be read from the device. Default: true
     Readable,
+}
+
+/// Number entity device classes.
+///
+/// The device classes are kept in sync with the sensor entity device classes. There is no
+/// automatic unit conversion.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum NumberDeviceClass {
+    /// Audio level in decibel, e.g. the volume, bass or treble of an AV receiver.
+    AudioLevel,
+    /// Battery charge level in %.
+    Battery,
+    /// Electrical current in ampere.
+    Current,
+    /// Time span, default unit: s. Supported units: `ms`, `s`, `min`, `h`, `d`.
+    Duration,
+    /// Energy in kilowatt-hour.
+    Energy,
+    /// Relative humidity in %.
+    Humidity,
+    /// Illuminance in lux.
+    Illuminance,
+    /// Power in watt or kilowatt.
+    Power,
+    /// Temperature, default unit: °C.
+    Temperature,
+    /// Voltage in volt.
+    Voltage,
+}
+
+/// Number entity display mode: hint for the preferred default representation in the UI.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum NumberDisplayMode {
+    /// The UI chooses the representation based on the value range.
+    #[default]
+    Auto,
+    /// Prefer a slider. Only applicable if `min` and `max` are set.
+    Slider,
+    /// Prefer a value field with increment and decrement buttons.
+    Stepper,
 }
 
 /// Number entity attributes.
@@ -1284,6 +1333,24 @@ mod tests {
         let feature = MediaPlayerFeature::DPad;
         assert_eq!("dpad", feature.as_ref());
         assert_eq!(feature, MediaPlayerFeature::from_str("dpad").unwrap());
+    }
+
+    #[test]
+    fn number_device_class_and_display_mode_are_snake_case() {
+        use crate::{NumberDeviceClass, NumberDisplayMode, NumberOptionField};
+
+        assert_eq!("audio_level", NumberDeviceClass::AudioLevel.as_ref());
+        assert_eq!(
+            NumberDeviceClass::AudioLevel,
+            NumberDeviceClass::from_str("audio_level").unwrap()
+        );
+        assert_eq!(
+            serde_json::json!("audio_level"),
+            serde_json::to_value(NumberDeviceClass::AudioLevel).unwrap()
+        );
+        assert_eq!("display_mode", NumberOptionField::DisplayMode.as_ref());
+        assert_eq!("stepper", NumberDisplayMode::Stepper.as_ref());
+        assert_eq!(NumberDisplayMode::Auto, NumberDisplayMode::default());
     }
 
     #[test]
