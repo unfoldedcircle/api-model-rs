@@ -1253,7 +1253,8 @@ pub enum NumberOptionField {
     Max,
     /// Step size between values. Default: 1, smallest step size: 0.000001
     Step,
-    /// Number of decimal places to show in the UI: 0..6. Default: 0
+    /// Number of decimal places to show in the UI: 0..6. If not set, the decimal places are
+    /// derived from `step`, `min` and `max`.
     Decimals,
     /// Optional unit label of the value, shown next to the value in the UI.
     /// Default: unit of the device class.
