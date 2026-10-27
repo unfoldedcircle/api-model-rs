@@ -1,12 +1,12 @@
 [package]
 name = "uc_api"
-version = "0.18.0"
+version = "0.20.0"
 authors = ["Markus Zehnder <markus.z@unfoldedcircle.com>"]
 license = "Apache-2.0"
 description = "Unfolded Circle API model"
 edition = "2024"
 repository = "https://github.com/unfoldedcircle/api-model-rs"
-rust-version = "1.85"
+rust-version = "1.88"
 
 [features]
 default = []
@@ -26,9 +26,9 @@ url = { version = "2", features = ["serde"] }
 
 # Helpful macros for working with enums and strings
 strum = "0.28"
-strum_macros = "0.27"
+strum_macros = "0.28"
 
-validator = "0.20"
+validator = "0.21"
 validator_derive = "0.20"
 regex = "1"
 once_cell = "1"

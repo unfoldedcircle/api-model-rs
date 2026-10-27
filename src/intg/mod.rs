@@ -117,6 +117,10 @@ pub struct SetupDriver {
     /// Input values of the initial setup page if it contains input fields and not just text.
     /// The key is the input field identifier, value contains the input value.
     pub setup_data: HashMap<String, String>,
+    /// Language of the user interface driving the setup (ISO 639-1 with optional country
+    /// suffix, e.g. `en`, `de_CH`). The driver should return page texts and error messages in
+    /// this language and may add `en` as a fallback, instead of all languages it supports.
+    pub language: Option<String>,
 }
 
 /// Message data payload of `driver_setup_change`.
@@ -126,6 +130,10 @@ pub struct DriverSetupChange {
     pub event_type: SetupChangeEventType,
     pub state: IntegrationSetupState,
     pub error: Option<IntegrationSetupError>,
+    /// Optional human-readable description of the error. Language-specific plain text (no
+    /// Markdown), key: ISO 639-1 code with optional country suffix. Clients pick the UI language,
+    /// fall back to `en`, then to any entry, then to a text for the `error` code.
+    pub error_message: Option<HashMap<String, String>>,
     pub require_user_action: Option<RequireUserAction>,
 }
 
