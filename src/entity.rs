@@ -1225,6 +1225,9 @@ pub enum SelectAttribute {
 #[strum(serialize_all = "snake_case")]
 pub enum NumberFeature {
     Value,
+    /// The device supports a transition time to reach a new value: `duration` parameter of the
+    /// `set_value` command. Optional, only set if supported by the device.
+    Transition,
 }
 
 /// Number entity commands.
@@ -1233,7 +1236,8 @@ pub enum NumberFeature {
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
 #[strum(serialize_all = "snake_case")]
 pub enum NumberCommand {
-    /// Set the value. Parameters: `value`, optional `duration` in milliseconds.
+    /// Set the value. Parameters: `value`, optional `duration` in milliseconds, which requires the
+    /// `transition` feature.
     SetValue,
     /// Increase the value by `step` (defaults to the `step` option), clamped at `max`.
     Increment,
