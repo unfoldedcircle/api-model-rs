@@ -955,11 +955,17 @@ pub enum SensorOptionField {
     /// device classes: `temperature`.
     NativeUnit,
     /// Number of decimal places to show in the UI if the sensor provides the measurement as a
-    /// number. Not applicable to string values.
+    /// number. Not applicable to string values and the `timestamp` and `date` device classes.
+    /// A `duration` value is rounded to this number of decimal places before it is formatted as
+    /// a time span.
     Decimals,
 }
 
 /// Sensor entity device classes.
+///
+/// The `timestamp`, `date` and `duration` device classes are formatted by the UI as a date, time
+/// or time span, with the localization settings of the Remote. The value must be sent in the
+/// specified machine-readable format and must not be formatted for display.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
@@ -971,6 +977,16 @@ pub enum SensorDeviceClass {
     Battery,
     /// Electrical current in ampere
     Current,
+    /// Calendar date without a time. Value: text in ISO 8601 format `YYYY-MM-DD`, e.g.
+    /// `2026-11-15`.
+    Date,
+    /// Time span, default unit: s. Supported units: `ms`, `s`, `min`, `h`, `d`. Value: number in
+    /// the unit of the sensor.
+    ///
+    /// A value in `min`, `h` or `d` is shown as a time span in the unit of the sensor and the next
+    /// smaller unit, e.g. `1.5` hours as `1h 30m`. A value in `ms` or `s` is shown as a number
+    /// with the unit.
+    Duration,
     /// Energy in kilowatt-hour
     Energy,
     /// Humidity in %
@@ -980,6 +996,9 @@ pub enum SensorDeviceClass {
     /// Temperature with automatic °C, °F conversion, depending on remote settings.
     /// Use native_unit option if the temperature is measured in °F.
     Temperature,
+    /// Point in time. Value: text in RFC 3339 format, including the UTC offset, e.g.
+    /// `2026-11-15T04:23:31+00:00`.
+    Timestamp,
     /// Voltage in volt
     Voltage,
     /// Binary sensor. The specific binary device class is stored in the `unit` attribute.
@@ -1271,7 +1290,8 @@ pub enum NumberOptionField {
 
 /// Number entity device classes.
 ///
-/// The device classes are kept in sync with the sensor entity device classes. There is no
+/// The device classes are kept in sync with the sensor entity device classes, unless a class only
+/// makes sense for one of them, like the `date` and `timestamp` sensor device classes. There is no
 /// automatic unit conversion.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -1356,6 +1376,24 @@ mod tests {
         assert_eq!("display_mode", NumberOptionField::DisplayMode.as_ref());
         assert_eq!("stepper", NumberDisplayMode::Stepper.as_ref());
         assert_eq!(NumberDisplayMode::Auto, NumberDisplayMode::default());
+    }
+
+    #[test]
+    fn sensor_date_time_device_classes_are_snake_case() {
+        use crate::SensorDeviceClass;
+
+        for (name, class) in [
+            ("date", SensorDeviceClass::Date),
+            ("duration", SensorDeviceClass::Duration),
+            ("timestamp", SensorDeviceClass::Timestamp),
+        ] {
+            assert_eq!(name, class.as_ref());
+            assert_eq!(class, SensorDeviceClass::from_str(name).unwrap());
+            assert_eq!(
+                serde_json::json!(name),
+                serde_json::to_value(class).unwrap()
+            );
+        }
     }
 
     #[test]
