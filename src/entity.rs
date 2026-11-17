@@ -8,11 +8,15 @@
 //!
 //! All variants will be serialized in `snake_case`.
 
-use crate::{REGEX_ID_CHARS, REGEX_LANGUAGE_CODE};
+use crate::{
+    REGEX_HTTP_HEADER_NAME, REGEX_ID_CHARS, REGEX_LANGUAGE_CODE, REGEX_WEBVIEW_BACKGROUND_COLOR,
+    REGEX_WEBVIEW_CERTIFICATE_SHA256,
+};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::skip_serializing_none;
 use strum_macros::*;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 pub const DEF_VOICE_SAMPLE_RATE: u32 = 16000;
 
@@ -40,6 +44,8 @@ pub enum EntityType {
     Select,
     Number,
     VoiceAssistant,
+    /// Web view entity. Its commands are executed by the user interface of the Remote.
+    Webview,
 }
 
 /// Button features.
@@ -1345,6 +1351,428 @@ pub enum NumberAttribute {
     Value,
 }
 
+/// Web view entity features. This entity has no features.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum WebviewFeature {}
+
+/// Web view entity commands.
+///
+/// The commands are executed by the user interface of the Remote and are never sent to an
+/// integration driver. In the Core-API, the command identifier has the entity type prefix, e.g.
+/// `webview.open`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum WebviewCommand {
+    /// Wake the display and show the web view fullscreen with its start page.
+    Open,
+    /// Reload the shown page, in the fullscreen web view or in the widget. No effect if the web
+    /// view isn't shown.
+    Reload,
+    /// Clear the HTTP cache of all web views and reload the shown page.
+    ClearCache,
+    /// Clear all website data of all web views and the credentials entered in a login dialog,
+    /// then reload the shown page.
+    ClearData,
+}
+
+/// Web view entity option fields. See [WebviewEntityOptions].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum WebviewOptionField {
+    /// Start page of the web view: absolute `http://` or `https://` URL. Required.
+    Url,
+    /// Credentials sent to the origin of the `url` option. See [WebviewAuth].
+    Auth,
+    /// Exception for an invalid TLS certificate of the host of the `url` option. See [WebviewTls].
+    Tls,
+    /// Cookies set before the start page is loaded. See [WebviewCookie].
+    Cookies,
+    /// User agent of the web view. See [WebviewUserAgent].
+    UserAgent,
+    /// Page zoom in percent: 25..400. Default: 100. Can be overridden by the user.
+    Zoom,
+    /// Background color while the page is loading, as `#RRGGBB`. Default: background color of
+    /// the UI theme.
+    BackgroundColor,
+    /// Show back, forward, reload and close controls in the fullscreen web view. Default: false.
+    /// Can be overridden by the user.
+    ShowNavigation,
+    /// Reload the page every n seconds while it is shown: 0 = off, otherwise 10..86400.
+    /// Default: 0. Can be overridden by the user.
+    ReloadInterval,
+}
+
+/// Web view entity attributes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum WebviewAttribute {
+    State,
+}
+
+/// Web view entity options.
+///
+/// The origin (scheme, host and port) of the `url` option is the scope of `auth`, `cookies` and
+/// `tls`: they are never applied to another origin.
+///
+/// Secret options: `auth.password`, `auth.token`, `auth.header_value` and `cookies[].value`.
+/// The Remote only hands them to its own user interface: Core-API responses omit the secret values
+/// and contain the `has_*` flags instead. The derived `Debug` output contains the secret values.
+///
+/// See [web view entity documentation](https://github.com/unfoldedcircle/core-api/blob/main/doc/entities/entity_webview.md)
+/// for more information.
+#[skip_serializing_none]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
+pub struct WebviewEntityOptions {
+    /// Start page of the web view. Absolute `http://` or `https://` URL, without user name and
+    /// password. The URL is not a secret: don't put tokens in the query string.
+    #[validate(length(min = 8, max = 2048, message = "Invalid length (min = 8, max = 2048)"))]
+    #[validate(custom(function = "validate_webview_url"))]
+    pub url: String,
+    /// Credentials sent to the origin of the `url` option.
+    #[validate(nested)]
+    pub auth: Option<WebviewAuth>,
+    /// Exception for an invalid TLS certificate of the host of the `url` option.
+    #[validate(nested)]
+    pub tls: Option<WebviewTls>,
+    /// Cookies set before the start page is loaded, each time the web view is opened. At most 20.
+    #[validate(length(max = 20, message = "Invalid length (max = 20)"))]
+    #[validate(nested)]
+    pub cookies: Option<Vec<WebviewCookie>>,
+    /// User agent of the web view. Default: [WebviewUserAgent::Default].
+    #[validate(custom(function = "validate_webview_user_agent"))]
+    pub user_agent: Option<WebviewUserAgent>,
+    /// Page zoom in percent: 25..400. Default: 100.
+    #[validate(range(min = 25, max = 400))]
+    pub zoom: Option<u16>,
+    /// Background color while the page is loading and behind transparent pages, as `#RRGGBB`.
+    /// Empty or not set: background color of the UI theme.
+    #[validate(regex(path = "*REGEX_WEBVIEW_BACKGROUND_COLOR"))]
+    pub background_color: Option<String>,
+    /// Show back, forward, reload and close controls in the fullscreen web view. Default: false.
+    pub show_navigation: Option<bool>,
+    /// Reload the page every n seconds while it is shown: 0 = off, otherwise 10..86400.
+    /// Default: 0.
+    #[validate(custom(function = "validate_webview_reload_interval"))]
+    pub reload_interval: Option<u32>,
+}
+
+impl WebviewEntityOptions {
+    /// Create web view options with the given start page and default values for all other
+    /// options.
+    pub fn new(url: impl Into<String>) -> Self {
+        Self {
+            url: url.into(),
+            auth: None,
+            tls: None,
+            cookies: None,
+            user_agent: None,
+            zoom: None,
+            background_color: None,
+            show_navigation: None,
+            reload_interval: None,
+        }
+    }
+}
+
+/// Web view authentication method.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum WebviewAuthType {
+    /// No credentials.
+    #[default]
+    None,
+    /// `username` and `password`, sent as answer to an HTTP authentication request (status 401)
+    /// of the origin. Not sent preemptively.
+    Basic,
+    /// `token`, sent as `Authorization: Bearer <token>` header with every request to the origin.
+    Bearer,
+    /// `header_name` and `header_value`, sent as header with every request to the origin, e.g. an
+    /// API key.
+    Header,
+}
+
+/// Web view credentials. They are only sent to the origin of the `url` option.
+///
+/// `password`, `token` and `header_value` are secrets. Core-API responses omit them and contain
+/// the `has_password`, `has_token` and `has_header_value` flags instead. In a Core-API update
+/// request, a missing secret keeps the stored value and an empty string removes it.
+///
+/// The length of the secrets is checked without adding the value to the validation error.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, Validate)]
+#[validate(schema(
+    function = "validate_webview_auth_secrets",
+    skip_on_field_errors = false
+))]
+pub struct WebviewAuth {
+    /// Authentication method.
+    #[serde(rename = "type")]
+    pub auth_type: WebviewAuthType,
+    /// `basic`: user name, at most 256 characters.
+    #[validate(length(max = 256, message = "Invalid length (max = 256)"))]
+    pub username: Option<String>,
+    /// `basic`: password, at most 256 characters. Secret.
+    pub password: Option<String>,
+    /// Set by the Remote in Core-API responses: a password is set.
+    pub has_password: Option<bool>,
+    /// `bearer`: token, at most 4096 characters. Secret.
+    pub token: Option<String>,
+    /// Set by the Remote in Core-API responses: a token is set.
+    pub has_token: Option<bool>,
+    /// `header`: name of the HTTP request header, e.g. `X-API-Key`.
+    ///
+    /// Not allowed: `Host`, `Cookie`, `Content-Length`, `Content-Type`, `Connection`,
+    /// `Transfer-Encoding`, `Upgrade`, `Origin`, `Referer`, and names starting with `Proxy-` or
+    /// `Sec-`.
+    #[validate(length(min = 1, max = 64, message = "Invalid length (min = 1, max = 64)"))]
+    #[validate(regex(path = "*REGEX_HTTP_HEADER_NAME"))]
+    #[validate(custom(function = "validate_webview_header_name"))]
+    pub header_name: Option<String>,
+    /// `header`: value of the HTTP request header, at most 4096 characters. Secret.
+    pub header_value: Option<String>,
+    /// Set by the Remote in Core-API responses: a header value is set.
+    pub has_header_value: Option<bool>,
+}
+
+/// Exception for an invalid TLS certificate of the host of the `url` option, e.g. a self-signed
+/// certificate. The exception only applies to page loads from this host.
+#[skip_serializing_none]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, Validate)]
+pub struct WebviewTls {
+    /// SHA-256 fingerprint of the expected DER-encoded server certificate: 64 hexadecimal
+    /// digits, optionally separated by `:`, case-insensitive. An invalid certificate is only
+    /// accepted if its fingerprint matches.
+    #[validate(regex(path = "*REGEX_WEBVIEW_CERTIFICATE_SHA256"))]
+    pub certificate_sha256: Option<String>,
+    /// Accept any invalid certificate of the host. Only used if `certificate_sha256` is not set.
+    /// Default: false.
+    pub allow_invalid_certificate: Option<bool>,
+}
+
+/// Cookie of a web view, set before the start page is loaded, each time the web view is opened.
+///
+/// The `value` is a secret. Core-API responses omit it and contain `has_value` instead. In a
+/// Core-API update request, a cookie without `value` keeps the stored value of the cookie with
+/// the same `name`, `domain` and `path`.
+///
+/// The length of the value is checked without adding the value to the validation error.
+#[skip_serializing_none]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
+#[validate(schema(
+    function = "validate_webview_cookie_secrets",
+    skip_on_field_errors = false
+))]
+pub struct WebviewCookie {
+    /// Cookie name.
+    #[validate(length(min = 1, max = 256, message = "Invalid length (min = 1, max = 256)"))]
+    pub name: String,
+    /// Cookie value according to RFC 6265, at most 4096 characters. Secret. Required in the
+    /// entity definition of an integration driver.
+    pub value: Option<String>,
+    /// Set by the Remote in Core-API responses: a value is set.
+    pub has_value: Option<bool>,
+    /// Domain of the cookie: the host of the `url` option or a parent domain of it. If not set,
+    /// the cookie is only sent to the host of the `url` option.
+    #[validate(length(max = 255, message = "Invalid length (max = 255)"))]
+    pub domain: Option<String>,
+    /// Path of the cookie. Default: `/`.
+    #[validate(length(max = 1024, message = "Invalid length (max = 1024)"))]
+    pub path: Option<String>,
+    /// Only send the cookie over HTTPS. Default: `true` for an `https://` URL, `false` otherwise.
+    pub secure: Option<bool>,
+    /// Hide the cookie from scripts of the page. Default: false.
+    pub http_only: Option<bool>,
+    /// Expiry date. If not set, the cookie is a session cookie.
+    pub expires: Option<DateTime<Utc>>,
+}
+
+impl WebviewCookie {
+    /// Create a session cookie for the host of the `url` option.
+    pub fn new(name: impl Into<String>, value: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            value: Some(value.into()),
+            has_value: None,
+            domain: None,
+            path: None,
+            secure: None,
+            http_only: None,
+            expires: None,
+        }
+    }
+}
+
+/// User agent of a web view, sent in the `User-Agent` header and returned in
+/// `navigator.userAgent`.
+///
+/// Serialized as `default`, `mobile`, `desktop` or the custom user agent string.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum WebviewUserAgent {
+    /// The user agent of the Remote, which identifies the Remote and its firmware version.
+    #[default]
+    Default,
+    /// The user agent of a common mobile browser, e.g. to get the mobile layout of a page.
+    Mobile,
+    /// The user agent of a common desktop browser, e.g. to get the desktop layout of a page.
+    Desktop,
+    /// Custom user agent string, at most 256 characters.
+    Other(String),
+}
+
+impl WebviewUserAgent {
+    pub fn as_str(&self) -> &str {
+        self.as_ref()
+    }
+}
+
+impl AsRef<str> for WebviewUserAgent {
+    fn as_ref(&self) -> &str {
+        match self {
+            WebviewUserAgent::Default => "default",
+            WebviewUserAgent::Mobile => "mobile",
+            WebviewUserAgent::Desktop => "desktop",
+            WebviewUserAgent::Other(s) => s.as_str(),
+        }
+    }
+}
+
+impl From<&str> for WebviewUserAgent {
+    fn from(s: &str) -> Self {
+        match s {
+            "default" => WebviewUserAgent::Default,
+            "mobile" => WebviewUserAgent::Mobile,
+            "desktop" => WebviewUserAgent::Desktop,
+            other => WebviewUserAgent::Other(other.to_owned()),
+        }
+    }
+}
+
+impl Serialize for WebviewUserAgent {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for WebviewUserAgent {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(WebviewUserAgent::from(&s[..]))
+    }
+}
+
+/// Request headers which can't be set with the `header` web view authentication, in lower case.
+/// Names starting with `proxy-` or `sec-` are not allowed either.
+const WEBVIEW_FORBIDDEN_HEADER_NAMES: [&str; 9] = [
+    "host",
+    "cookie",
+    "content-length",
+    "content-type",
+    "connection",
+    "transfer-encoding",
+    "upgrade",
+    "origin",
+    "referer",
+];
+
+fn validate_webview_url(url: &str) -> Result<(), ValidationError> {
+    let has_http_scheme = url
+        .get(..7)
+        .is_some_and(|s| s.eq_ignore_ascii_case("http://"))
+        || url
+            .get(..8)
+            .is_some_and(|s| s.eq_ignore_ascii_case("https://"));
+    if !has_http_scheme {
+        return Err(ValidationError::new("url")
+            .with_message("Only absolute http:// and https:// URLs are supported".into()));
+    }
+    let parsed = url::Url::parse(url)
+        .map_err(|_| ValidationError::new("url").with_message("Invalid URL".into()))?;
+    if !parsed.username().is_empty() || parsed.password().is_some() {
+        return Err(ValidationError::new("url").with_message(
+            "User name and password are not allowed in the URL, use the auth option".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn validate_webview_user_agent(user_agent: &WebviewUserAgent) -> Result<(), ValidationError> {
+    let len = user_agent.as_str().chars().count();
+    if !(1..=256).contains(&len) {
+        return Err(ValidationError::new("length")
+            .with_message("Invalid length (min = 1, max = 256)".into()));
+    }
+    Ok(())
+}
+
+fn validate_webview_reload_interval(interval: u32) -> Result<(), ValidationError> {
+    if interval == 0 || (10..=86400).contains(&interval) {
+        Ok(())
+    } else {
+        Err(ValidationError::new("range")
+            .with_message("Invalid reload interval: 0 = off, otherwise 10..86400".into()))
+    }
+}
+
+fn validate_webview_header_name(name: &str) -> Result<(), ValidationError> {
+    let name = name.to_ascii_lowercase();
+    if WEBVIEW_FORBIDDEN_HEADER_NAMES.contains(&name.as_str())
+        || name.starts_with("proxy-")
+        || name.starts_with("sec-")
+    {
+        return Err(ValidationError::new("not_allowed")
+            .with_message("This header name can't be set".into()));
+    }
+    Ok(())
+}
+
+/// Length check of a secret value.
+///
+/// The validator derive macros add the field value to a validation error. Secrets are checked
+/// here instead, and the error only contains the field name and the maximum length.
+fn validate_secret_length(
+    field: &'static str,
+    value: Option<&String>,
+    max: usize,
+) -> Result<(), ValidationError> {
+    match value {
+        Some(value) if value.chars().count() > max => {
+            let mut err = ValidationError::new("length")
+                .with_message(format!("Invalid length of {field} (max = {max})").into());
+            err.add_param("field".into(), &field);
+            err.add_param("max".into(), &max);
+            Err(err)
+        }
+        _ => Ok(()),
+    }
+}
+
+fn validate_webview_auth_secrets(auth: &WebviewAuth) -> Result<(), ValidationError> {
+    validate_secret_length("password", auth.password.as_ref(), 256)?;
+    validate_secret_length("token", auth.token.as_ref(), 4096)?;
+    validate_secret_length("header_value", auth.header_value.as_ref(), 4096)
+}
+
+fn validate_webview_cookie_secrets(cookie: &WebviewCookie) -> Result<(), ValidationError> {
+    validate_secret_length("value", cookie.value.as_ref(), 4096)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{AudioConfiguration, MediaPlayerCommand, MediaPlayerFeature, SampleFormat};
@@ -1394,6 +1822,413 @@ mod tests {
                 serde_json::to_value(class).unwrap()
             );
         }
+    }
+
+    #[test]
+    fn webview_entity_type_is_webview() {
+        use crate::EntityType;
+        use strum::VariantNames;
+
+        assert_eq!("webview", EntityType::Webview.as_ref());
+        assert_eq!("webview", EntityType::Webview.to_string());
+        assert_eq!(
+            EntityType::Webview,
+            EntityType::from_str("webview").unwrap()
+        );
+        assert_eq!(
+            serde_json::json!("webview"),
+            serde_json::to_value(EntityType::Webview).unwrap()
+        );
+        assert_eq!(
+            EntityType::Webview,
+            serde_json::from_value::<EntityType>(serde_json::json!("webview")).unwrap()
+        );
+        assert!(EntityType::VARIANTS.contains(&"webview"));
+    }
+
+    #[test]
+    fn webview_enums_are_snake_case() {
+        use crate::{
+            WebviewAttribute, WebviewAuthType, WebviewCommand, WebviewFeature, WebviewOptionField,
+        };
+        use strum::VariantNames;
+
+        assert!(WebviewFeature::VARIANTS.is_empty());
+
+        for (name, cmd) in [
+            ("open", WebviewCommand::Open),
+            ("reload", WebviewCommand::Reload),
+            ("clear_cache", WebviewCommand::ClearCache),
+            ("clear_data", WebviewCommand::ClearData),
+        ] {
+            assert_eq!(name, cmd.as_ref());
+            assert_eq!(cmd, WebviewCommand::from_str(name).unwrap());
+            assert_eq!(serde_json::json!(name), serde_json::to_value(cmd).unwrap());
+            assert_eq!(
+                cmd,
+                serde_json::from_value::<WebviewCommand>(serde_json::json!(name)).unwrap()
+            );
+        }
+        assert_eq!(4, WebviewCommand::VARIANTS.len());
+
+        assert_eq!(
+            &[
+                "url",
+                "auth",
+                "tls",
+                "cookies",
+                "user_agent",
+                "zoom",
+                "background_color",
+                "show_navigation",
+                "reload_interval"
+            ],
+            WebviewOptionField::VARIANTS
+        );
+        assert_eq!(
+            serde_json::json!("reload_interval"),
+            serde_json::to_value(WebviewOptionField::ReloadInterval).unwrap()
+        );
+
+        assert_eq!(&["state"], WebviewAttribute::VARIANTS);
+
+        assert_eq!(
+            &["none", "basic", "bearer", "header"],
+            WebviewAuthType::VARIANTS
+        );
+        assert_eq!(WebviewAuthType::None, WebviewAuthType::default());
+        assert_eq!(
+            WebviewAuthType::Bearer,
+            serde_json::from_value::<WebviewAuthType>(serde_json::json!("bearer")).unwrap()
+        );
+    }
+
+    #[test]
+    fn webview_user_agent_round_trip() {
+        use crate::WebviewUserAgent;
+
+        for (name, user_agent) in [
+            ("default", WebviewUserAgent::Default),
+            ("mobile", WebviewUserAgent::Mobile),
+            ("desktop", WebviewUserAgent::Desktop),
+            (
+                "MyDashboard/1.0",
+                WebviewUserAgent::Other("MyDashboard/1.0".into()),
+            ),
+        ] {
+            assert_eq!(name, user_agent.as_str());
+            assert_eq!(user_agent, WebviewUserAgent::from(name));
+            assert_eq!(
+                serde_json::json!(name),
+                serde_json::to_value(&user_agent).unwrap()
+            );
+            assert_eq!(
+                user_agent,
+                serde_json::from_value::<WebviewUserAgent>(serde_json::json!(name)).unwrap()
+            );
+        }
+        assert_eq!(WebviewUserAgent::Default, WebviewUserAgent::default());
+    }
+
+    #[test]
+    fn webview_options_round_trip() {
+        use crate::WebviewEntityOptions;
+
+        let examples = [
+            // integration driver: bearer token
+            serde_json::json!({
+                "url": "https://dashboard.example.com/energy?kiosk=1",
+                "auth": {
+                    "type": "bearer",
+                    "token": "eyJhbGciOiJIUzI1NiJ9.example.token"
+                },
+                "user_agent": "desktop",
+                "zoom": 70
+            }),
+            // integration driver: API key header and cookie
+            serde_json::json!({
+                "url": "http://inverter.home.arpa/status",
+                "auth": {
+                    "type": "header",
+                    "header_name": "X-API-Key",
+                    "header_value": "3b1f0c9e7a"
+                },
+                "cookies": [
+                    {
+                        "name": "layout",
+                        "value": "compact"
+                    }
+                ],
+                "reload_interval": 60,
+                "show_navigation": true
+            }),
+            // Core-API response: secret values replaced by the has_* flags
+            serde_json::json!({
+                "url": "https://nas.home.arpa:5001/status",
+                "auth": {
+                    "type": "basic",
+                    "username": "viewer",
+                    "has_password": true
+                },
+                "tls": {
+                    "certificate_sha256": "3F:A9:12:5C:77:0B:E4:21:9D:6A:C8:0F:41:B2:93:EE:58:17:0C:D4:2A:9B:61:F0:7E:3C:88:15:A6:D2:4B:C9"
+                },
+                "cookies": [
+                    {
+                        "name": "layout",
+                        "has_value": true
+                    }
+                ],
+                "zoom": 80,
+                "reload_interval": 300
+            }),
+            // all options
+            serde_json::json!({
+                "url": "https://dashboard.example.com/",
+                "auth": {
+                    "type": "none"
+                },
+                "tls": {
+                    "allow_invalid_certificate": true
+                },
+                "cookies": [
+                    {
+                        "name": "session",
+                        "value": "abc123",
+                        "domain": "example.com",
+                        "path": "/app",
+                        "secure": true,
+                        "http_only": true,
+                        "expires": "2027-01-01T00:00:00Z"
+                    }
+                ],
+                "user_agent": "MyDashboard/1.0",
+                "zoom": 25,
+                "background_color": "#1a2B3c",
+                "show_navigation": false,
+                "reload_interval": 86400
+            }),
+        ];
+
+        for json in examples {
+            let options: WebviewEntityOptions =
+                serde_json::from_value(json.clone()).expect("Invalid web view options");
+            assert!(
+                options.validate().is_ok(),
+                "Options should be valid: {:?}",
+                options.validate()
+            );
+            assert_eq!(json, serde_json::to_value(&options).unwrap());
+        }
+    }
+
+    #[test]
+    fn webview_options_new_and_with_options() {
+        use crate::intg::AvailableIntgEntity;
+        use crate::{
+            EntityType, WebviewAuth, WebviewAuthType, WebviewCookie, WebviewEntityOptions,
+        };
+
+        let mut options = WebviewEntityOptions::new("https://dashboard.example.com/energy");
+        assert_eq!(
+            serde_json::json!({ "url": "https://dashboard.example.com/energy" }),
+            serde_json::to_value(&options).unwrap()
+        );
+
+        options.auth = Some(WebviewAuth {
+            auth_type: WebviewAuthType::Bearer,
+            token: Some("secret-token".into()),
+            ..Default::default()
+        });
+        options.cookies = Some(vec![WebviewCookie::new("layout", "compact")]);
+        options.zoom = Some(70);
+        assert!(options.validate().is_ok());
+
+        let entity: AvailableIntgEntity = serde_json::from_value(serde_json::json!({
+            "entity_id": "dashboard-energy",
+            "entity_type": "webview",
+            "name": { "en": "Energy dashboard" }
+        }))
+        .unwrap();
+        let entity = entity.with_options(&options).unwrap();
+        assert_eq!(EntityType::Webview, entity.entity_type);
+        assert_eq!(
+            serde_json::json!({
+                "url": "https://dashboard.example.com/energy",
+                "auth": { "type": "bearer", "token": "secret-token" },
+                "cookies": [{ "name": "layout", "value": "compact" }],
+                "zoom": 70
+            }),
+            serde_json::Value::Object(entity.options.unwrap())
+        );
+    }
+
+    #[test]
+    fn webview_options_valid_edge_cases() {
+        use crate::WebviewEntityOptions;
+
+        for json in [
+            serde_json::json!({ "url": "HTTPS://Example.com" }),
+            serde_json::json!({ "url": "http://192.168.1.10:8123/lovelace/0" }),
+            serde_json::json!({ "url": "https://example.com/", "zoom": 400 }),
+            serde_json::json!({ "url": "https://example.com/", "reload_interval": 0 }),
+            serde_json::json!({ "url": "https://example.com/", "reload_interval": 10 }),
+            serde_json::json!({ "url": "https://example.com/", "background_color": "" }),
+            serde_json::json!({ "url": "https://example.com/", "auth": { "type": "header", "header_name": "Authorization", "header_value": "Token abc" } }),
+            serde_json::json!({ "url": "https://example.com/", "tls": { "certificate_sha256": "3fa9125c770be4219d6ac80f41b293ee58170cd42a9b61f07e3c8815a6d24bc9" } }),
+            serde_json::json!({ "url": "https://example.com/", "cookies": [{ "name": "a", "value": "" }] }),
+        ] {
+            let options: WebviewEntityOptions =
+                serde_json::from_value(json.clone()).expect("Invalid web view options");
+            assert!(
+                options.validate().is_ok(),
+                "{json} should be valid: {:?}",
+                options.validate()
+            );
+        }
+    }
+
+    #[test]
+    fn webview_options_validation_errors() {
+        use crate::WebviewEntityOptions;
+
+        let cookies: Vec<_> = (0..21)
+            .map(|i| serde_json::json!({ "name": format!("c{i}"), "value": "v" }))
+            .collect();
+
+        for (json, field) in [
+            (serde_json::json!({ "url": "file:///etc/passwd" }), "url"),
+            (serde_json::json!({ "url": "javascript:alert(1)" }), "url"),
+            (serde_json::json!({ "url": "http:/example.com/x" }), "url"),
+            (serde_json::json!({ "url": "https://" }), "url"),
+            (
+                serde_json::json!({ "url": "https://user:secret@example.com/" }),
+                "url",
+            ),
+            (
+                serde_json::json!({ "url": format!("https://example.com/{}", "a".repeat(2030)) }),
+                "url",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "zoom": 24 }),
+                "zoom",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "zoom": 401 }),
+                "zoom",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "reload_interval": 9 }),
+                "reload_interval",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "reload_interval": 86401 }),
+                "reload_interval",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "background_color": "red" }),
+                "background_color",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "background_color": "#12345" }),
+                "background_color",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "user_agent": "" }),
+                "user_agent",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "user_agent": "a".repeat(257) }),
+                "user_agent",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "tls": { "certificate_sha256": "3F:A9" } }),
+                "tls",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "header", "header_name": "Cookie" } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "header", "header_name": "proxy-authorization" } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "header", "header_name": "Sec-Fetch-Mode" } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "header", "header_name": "X API Key" } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "basic", "username": "a".repeat(257) } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "basic", "password": "a".repeat(257) } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "bearer", "token": "a".repeat(4097) } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "auth": { "type": "header", "header_name": "X-Key", "header_value": "a".repeat(4097) } }),
+                "auth",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "cookies": cookies }),
+                "cookies",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "cookies": [{ "name": "", "value": "v" }] }),
+                "cookies",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "cookies": [{ "name": "a", "value": "v".repeat(4097) }] }),
+                "cookies",
+            ),
+        ] {
+            let options: WebviewEntityOptions =
+                serde_json::from_value(json.clone()).expect("Invalid web view options");
+            let errors = options
+                .validate()
+                .expect_err(&format!("{json} should be invalid"));
+            assert!(
+                errors.errors().contains_key(field),
+                "{json}: expected error for {field}, got: {errors:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn webview_auth_requires_type() {
+        use crate::WebviewAuth;
+
+        let res = serde_json::from_value::<WebviewAuth>(serde_json::json!({ "token": "abc" }));
+        assert!(res.is_err(), "Missing auth type should fail: {res:?}");
+    }
+
+    #[test]
+    fn webview_secret_validation_error_omits_the_secret() {
+        use crate::{WebviewAuth, WebviewAuthType, WebviewCookie};
+
+        let secret = "s".repeat(4097);
+        let auth = WebviewAuth {
+            auth_type: WebviewAuthType::Bearer,
+            token: Some(secret.clone()),
+            ..Default::default()
+        };
+        let errors = auth.validate().expect_err("Token should be too long");
+        assert!(!format!("{errors:?}").contains(&secret));
+        assert!(!errors.to_string().contains(&secret));
+        assert!(errors.to_string().contains("token"), "{errors}");
+
+        let cookie = WebviewCookie::new("session", secret.clone());
+        let errors = cookie.validate().expect_err("Value should be too long");
+        assert!(!format!("{errors:?}").contains(&secret));
+        assert!(!errors.to_string().contains(&secret));
     }
 
     #[test]
