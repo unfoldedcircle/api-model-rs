@@ -60,7 +60,7 @@ static REGEX_LANGUAGE_CODE: Lazy<Regex> =
 static REGEX_HTTP_HEADER_NAME: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"^[!#$%&'*+.^_`|~0-9A-Za-z-]+$").expect("invalid REGEX_HTTP_HEADER_NAME")
 });
-/// Web view background color `#RRGGBB`. Empty: background color of the UI theme.
+/// Web view background color `#RRGGBB`. Empty: the default white `#FFFFFF`.
 static REGEX_WEBVIEW_BACKGROUND_COLOR: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"^(#[0-9a-fA-F]{6})?$").expect("invalid REGEX_WEBVIEW_BACKGROUND_COLOR")
 });

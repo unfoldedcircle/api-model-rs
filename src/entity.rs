@@ -1398,8 +1398,8 @@ pub enum WebviewOptionField {
     UserAgent,
     /// Page zoom in percent: 25..400. Default: 100. Can be overridden by the user.
     Zoom,
-    /// Background color while the page is loading, as `#RRGGBB`. Default: background color of
-    /// the UI theme.
+    /// Background color while the page is loading and behind transparent pages, as `#RRGGBB`.
+    /// Default: white `#FFFFFF`.
     BackgroundColor,
     /// Show back, forward, reload and close controls in the fullscreen web view. Default: false.
     /// Can be overridden by the user.
@@ -1454,7 +1454,7 @@ pub struct WebviewEntityOptions {
     #[validate(range(min = 25, max = 400))]
     pub zoom: Option<u16>,
     /// Background color while the page is loading and behind transparent pages, as `#RRGGBB`.
-    /// Empty or not set: background color of the UI theme.
+    /// Empty or not set: white `#FFFFFF`.
     #[validate(regex(path = "*REGEX_WEBVIEW_BACKGROUND_COLOR"))]
     pub background_color: Option<String>,
     /// Show back, forward, reload and close controls in the fullscreen web view. Default: false.
