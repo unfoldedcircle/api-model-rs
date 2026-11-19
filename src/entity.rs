@@ -15,6 +15,8 @@ use crate::{
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::skip_serializing_none;
+use std::collections::BTreeMap;
+use std::str::FromStr;
 use strum_macros::*;
 use validator::{Validate, ValidationError};
 
@@ -1407,6 +1409,9 @@ pub enum WebviewOptionField {
     /// Reload the page every n seconds while it is shown: 0 = off, otherwise 10..86400.
     /// Default: 0. Can be overridden by the user.
     ReloadInterval,
+    /// Function of single physical buttons in the fullscreen web view. See
+    /// [WebviewButtonAction]. Can be overridden by the user.
+    Buttons,
 }
 
 /// Web view entity attributes.
@@ -1463,6 +1468,11 @@ pub struct WebviewEntityOptions {
     /// Default: 0.
     #[validate(custom(function = "validate_webview_reload_interval"))]
     pub reload_interval: Option<u32>,
+    /// Function of single physical buttons in the fullscreen web view, by button identifier, see
+    /// [WebviewButton]. Only contains the buttons which differ from the global web view settings
+    /// of the Remote, which define the default actions.
+    #[validate(custom(function = "validate_webview_buttons"))]
+    pub buttons: Option<BTreeMap<String, WebviewButtonAction>>,
 }
 
 impl WebviewEntityOptions {
@@ -1479,6 +1489,7 @@ impl WebviewEntityOptions {
             background_color: None,
             show_navigation: None,
             reload_interval: None,
+            buttons: None,
         }
     }
 }
@@ -1677,6 +1688,205 @@ impl<'de> Deserialize<'de> for WebviewUserAgent {
     }
 }
 
+/// Physical button of the Remote which can be changed in the fullscreen web view, with the same
+/// identifier as in the button mapping of an activity.
+///
+/// Not every Remote model has all buttons: [WebviewButton::Red], [WebviewButton::Green],
+/// [WebviewButton::Yellow] and [WebviewButton::Blue] are only on the Remote Two,
+/// [WebviewButton::Record], [WebviewButton::Stop] and [WebviewButton::Menu] only on the Remote 3.
+/// The buttons in [WEBVIEW_FIXED_BUTTONS] can't be changed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+pub enum WebviewButton {
+    Back,
+    DpadUp,
+    DpadDown,
+    DpadLeft,
+    DpadRight,
+    DpadMiddle,
+    VolumeUp,
+    VolumeDown,
+    ChannelUp,
+    ChannelDown,
+    Mute,
+    Prev,
+    Play,
+    Next,
+    Stop,
+    Record,
+    Menu,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+}
+
+/// Physical buttons with a fixed function in the web view, which can't be changed: `HOME` always
+/// closes the web view, `POWER` and `VOICE` keep their normal function.
+pub const WEBVIEW_FIXED_BUTTONS: [&str; 3] = ["HOME", "POWER", "VOICE"];
+
+/// Action of a physical button in the fullscreen web view.
+///
+/// Serialized as an object with the `action` field, e.g. `{ "action": "function", "function":
+/// "zoom_in" }`, `{ "action": "key", "key": "ChannelUp" }` or `{ "action": "pass" }`.
+///
+/// A held button repeats key events and the functions [WebviewButtonFunction::ScrollUp],
+/// [WebviewButtonFunction::ScrollDown], [WebviewButtonFunction::PageUp] and
+/// [WebviewButtonFunction::PageDown]. All other functions act once per press.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "action", rename_all = "snake_case")]
+#[serde(try_from = "WebviewButtonActionObject")]
+pub enum WebviewButtonAction {
+    /// The button keeps its function in the layer below the web view: the button mapping of the
+    /// activity if the web view is shown on top of an activity, otherwise the function of the
+    /// button on the screen below.
+    Pass,
+    /// A web view function.
+    Function { function: WebviewButtonFunction },
+    /// A key event sent to the page.
+    Key { key: WebviewButtonKey },
+}
+
+/// Deserialization form of [WebviewButtonAction]: `function` and `key` are only allowed for
+/// their action. A unit variant of an internally tagged enum would accept them.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WebviewButtonActionObject {
+    action: WebviewButtonActionName,
+    function: Option<WebviewButtonFunction>,
+    key: Option<WebviewButtonKey>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum WebviewButtonActionName {
+    Pass,
+    Function,
+    Key,
+}
+
+impl TryFrom<WebviewButtonActionObject> for WebviewButtonAction {
+    type Error = &'static str;
+
+    fn try_from(value: WebviewButtonActionObject) -> Result<Self, Self::Error> {
+        use WebviewButtonActionName as Name;
+        match (value.action, value.function, value.key) {
+            (Name::Pass, None, None) => Ok(Self::Pass),
+            (Name::Function, Some(function), None) => Ok(Self::Function { function }),
+            (Name::Key, None, Some(key)) => Ok(Self::Key { key }),
+            (Name::Function, None, _) => Err("missing field `function`"),
+            (Name::Key, _, None) => Err("missing field `key`"),
+            (_, Some(_), _) => Err("field `function` is only allowed for the function action"),
+            (_, _, Some(_)) => Err("field `key` is only allowed for the key action"),
+        }
+    }
+}
+
+/// Web view function of a physical button. See [WebviewButtonAction::Function].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[derive(AsRefStr, Display, EnumString, VariantNames)] // strum_macros
+#[strum(serialize_all = "snake_case")]
+pub enum WebviewButtonFunction {
+    /// Zoom the page in by one step. The changed zoom isn't saved to the entity.
+    ZoomIn,
+    /// Zoom the page out by one step. The changed zoom isn't saved to the entity.
+    ZoomOut,
+    /// Zoom back to the effective `zoom` option of the web view.
+    ZoomReset,
+    /// Scroll the page up by a small step.
+    ScrollUp,
+    /// Scroll the page down by a small step.
+    ScrollDown,
+    /// Scroll the page up by one screen.
+    PageUp,
+    /// Scroll the page down by one screen.
+    PageDown,
+    /// Scroll to the top of the page.
+    Top,
+    /// Scroll to the bottom of the page.
+    Bottom,
+    /// Go back in the history of the web view.
+    Back,
+    /// Go forward in the history of the web view.
+    Forward,
+    /// Go back in the history, or close the web view on its first page.
+    BackOrClose,
+    /// Reload the page.
+    Reload,
+    /// Stop loading the page.
+    Stop,
+    /// Close the web view and return to the previous screen.
+    Close,
+    /// Show or hide the navigation controls. The change isn't saved to the entity.
+    ToggleNavigation,
+    /// Move the focus to the next element of the page, like `Tab` on a keyboard.
+    FocusNext,
+    /// Move the focus to the previous element of the page, like `Shift+Tab` on a keyboard.
+    FocusPrevious,
+    /// The button does nothing.
+    None,
+}
+
+/// Key event of a physical button, sent to the page. See [WebviewButtonAction::Key].
+///
+/// Serialized as the `KeyboardEvent.key` value of the
+/// [UI Events key values](https://www.w3.org/TR/uievents-key/), which is the variant name, e.g.
+/// `ArrowUp`. The page receives a key event with this `key` and the matching `code`.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    AsRefStr,
+    Display,
+    EnumString,
+    VariantNames,
+)] // strum_macros
+pub enum WebviewButtonKey {
+    ArrowUp,
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    Enter,
+    Escape,
+    Backspace,
+    Tab,
+    PageUp,
+    PageDown,
+    Home,
+    End,
+    ContextMenu,
+    BrowserBack,
+    BrowserForward,
+    BrowserRefresh,
+    BrowserStop,
+    Exit,
+    AudioVolumeUp,
+    AudioVolumeDown,
+    AudioVolumeMute,
+    ChannelUp,
+    ChannelDown,
+    MediaPlayPause,
+    MediaPlay,
+    MediaPause,
+    MediaStop,
+    MediaRecord,
+    MediaRewind,
+    MediaFastForward,
+    MediaTrackPrevious,
+    MediaTrackNext,
+    ColorF0Red,
+    ColorF1Green,
+    ColorF2Yellow,
+    ColorF3Blue,
+}
+
 /// Request headers which can't be set with the `header` web view authentication, in lower case.
 /// Names starting with `proxy-` or `sec-` are not allowed either.
 const WEBVIEW_FORBIDDEN_HEADER_NAMES: [&str; 9] = [
@@ -1728,6 +1938,26 @@ fn validate_webview_reload_interval(interval: u32) -> Result<(), ValidationError
         Err(ValidationError::new("range")
             .with_message("Invalid reload interval: 0 = off, otherwise 10..86400".into()))
     }
+}
+
+/// Only the buttons of [WebviewButton] can be changed: an unknown button, or one of
+/// [WEBVIEW_FIXED_BUTTONS], is refused.
+fn validate_webview_buttons(
+    buttons: &BTreeMap<String, WebviewButtonAction>,
+) -> Result<(), ValidationError> {
+    for button in buttons.keys() {
+        if WebviewButton::from_str(button).is_err() {
+            let message = if WEBVIEW_FIXED_BUTTONS.contains(&button.as_str()) {
+                format!("Button {button} has a fixed function in the web view")
+            } else {
+                format!("Unknown button {button}")
+            };
+            let mut err = ValidationError::new("button").with_message(message.into());
+            err.add_param("button".into(), button);
+            return Err(err);
+        }
+    }
+    Ok(())
 }
 
 fn validate_webview_header_name(name: &str) -> Result<(), ValidationError> {
@@ -1881,7 +2111,8 @@ mod tests {
                 "zoom",
                 "background_color",
                 "show_navigation",
-                "reload_interval"
+                "reload_interval",
+                "buttons"
             ],
             WebviewOptionField::VARIANTS
         );
@@ -2006,7 +2237,13 @@ mod tests {
                 "zoom": 25,
                 "background_color": "#1a2B3c",
                 "show_navigation": false,
-                "reload_interval": 86400
+                "reload_interval": 86400,
+                "buttons": {
+                    "BACK": { "action": "function", "function": "back_or_close" },
+                    "VOLUME_UP": { "action": "pass" },
+                    "CHANNEL_UP": { "action": "key", "key": "ChannelUp" },
+                    "RED": { "action": "key", "key": "ColorF0Red" }
+                }
             }),
         ];
 
@@ -2189,6 +2426,22 @@ mod tests {
                 serde_json::json!({ "url": "https://example.com/", "cookies": [{ "name": "a", "value": "v".repeat(4097) }] }),
                 "cookies",
             ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "buttons": { "HOME": { "action": "pass" } } }),
+                "buttons",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "buttons": { "POWER": { "action": "pass" } } }),
+                "buttons",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "buttons": { "VOICE": { "action": "pass" } } }),
+                "buttons",
+            ),
+            (
+                serde_json::json!({ "url": "https://example.com/", "buttons": { "BACK": { "action": "pass" }, "back": { "action": "pass" } } }),
+                "buttons",
+            ),
         ] {
             let options: WebviewEntityOptions =
                 serde_json::from_value(json.clone()).expect("Invalid web view options");
@@ -2199,6 +2452,170 @@ mod tests {
                 errors.errors().contains_key(field),
                 "{json}: expected error for {field}, got: {errors:?}"
             );
+        }
+    }
+
+    #[test]
+    fn webview_button_names() {
+        use crate::{
+            WEBVIEW_FIXED_BUTTONS, WebviewButton, WebviewButtonFunction, WebviewButtonKey,
+        };
+        use strum::VariantNames;
+
+        assert_eq!(
+            &[
+                "BACK",
+                "DPAD_UP",
+                "DPAD_DOWN",
+                "DPAD_LEFT",
+                "DPAD_RIGHT",
+                "DPAD_MIDDLE",
+                "VOLUME_UP",
+                "VOLUME_DOWN",
+                "CHANNEL_UP",
+                "CHANNEL_DOWN",
+                "MUTE",
+                "PREV",
+                "PLAY",
+                "NEXT",
+                "STOP",
+                "RECORD",
+                "MENU",
+                "RED",
+                "GREEN",
+                "YELLOW",
+                "BLUE"
+            ],
+            WebviewButton::VARIANTS
+        );
+        for button in WEBVIEW_FIXED_BUTTONS {
+            assert!(WebviewButton::from_str(button).is_err(), "{button}");
+        }
+        assert_eq!(
+            WebviewButton::DpadMiddle,
+            serde_json::from_value::<WebviewButton>(serde_json::json!("DPAD_MIDDLE")).unwrap()
+        );
+
+        assert_eq!(19, WebviewButtonFunction::VARIANTS.len());
+        assert_eq!(
+            serde_json::json!("back_or_close"),
+            serde_json::to_value(WebviewButtonFunction::BackOrClose).unwrap()
+        );
+        assert_eq!("none", WebviewButtonFunction::None.as_ref());
+
+        // the UI Events key values, unchanged
+        assert_eq!(36, WebviewButtonKey::VARIANTS.len());
+        for (name, key) in [
+            ("ArrowUp", WebviewButtonKey::ArrowUp),
+            ("ContextMenu", WebviewButtonKey::ContextMenu),
+            ("AudioVolumeMute", WebviewButtonKey::AudioVolumeMute),
+            ("MediaTrackPrevious", WebviewButtonKey::MediaTrackPrevious),
+            ("ColorF0Red", WebviewButtonKey::ColorF0Red),
+            ("ColorF3Blue", WebviewButtonKey::ColorF3Blue),
+        ] {
+            assert_eq!(name, key.as_ref());
+            assert_eq!(key, WebviewButtonKey::from_str(name).unwrap());
+            assert_eq!(serde_json::json!(name), serde_json::to_value(key).unwrap());
+        }
+    }
+
+    #[test]
+    fn webview_button_action_round_trip() {
+        use crate::{WebviewButtonAction, WebviewButtonFunction, WebviewButtonKey};
+
+        for (json, action) in [
+            (
+                serde_json::json!({ "action": "pass" }),
+                WebviewButtonAction::Pass,
+            ),
+            (
+                serde_json::json!({ "action": "function", "function": "zoom_in" }),
+                WebviewButtonAction::Function {
+                    function: WebviewButtonFunction::ZoomIn,
+                },
+            ),
+            (
+                serde_json::json!({ "action": "function", "function": "none" }),
+                WebviewButtonAction::Function {
+                    function: WebviewButtonFunction::None,
+                },
+            ),
+            (
+                serde_json::json!({ "action": "key", "key": "ChannelUp" }),
+                WebviewButtonAction::Key {
+                    key: WebviewButtonKey::ChannelUp,
+                },
+            ),
+        ] {
+            assert_eq!(json, serde_json::to_value(action).unwrap());
+            assert_eq!(
+                action,
+                serde_json::from_value::<WebviewButtonAction>(json).unwrap()
+            );
+        }
+    }
+
+    #[test]
+    fn webview_button_action_rejects_invalid_objects() {
+        use crate::WebviewButtonAction;
+
+        for json in [
+            serde_json::json!({}),
+            serde_json::json!({ "action": "zoom" }),
+            serde_json::json!({ "action": "PASS" }),
+            serde_json::json!({ "action": "function" }),
+            serde_json::json!({ "action": "function", "function": "zoom" }),
+            serde_json::json!({ "action": "function", "function": "zoom_in", "key": "Enter" }),
+            serde_json::json!({ "action": "key" }),
+            serde_json::json!({ "action": "key", "key": "enter" }),
+            serde_json::json!({ "action": "key", "key": "F1" }),
+            serde_json::json!({ "action": "key", "key": "Enter", "function": "close" }),
+            serde_json::json!({ "action": "pass", "key": "Enter" }),
+            serde_json::json!({ "action": "pass", "function": "close" }),
+            serde_json::json!({ "action": "pass", "repeat": true }),
+            serde_json::json!("pass"),
+        ] {
+            let res = serde_json::from_value::<WebviewButtonAction>(json.clone());
+            assert!(res.is_err(), "{json} must be refused: {res:?}");
+        }
+
+        for (json, message) in [
+            (
+                serde_json::json!({ "action": "function" }),
+                "missing field `function`",
+            ),
+            (
+                serde_json::json!({ "action": "pass", "key": "Enter" }),
+                "field `key` is only allowed for the key action",
+            ),
+            (
+                serde_json::json!({ "action": "key", "key": "Enter", "function": "close" }),
+                "field `function` is only allowed for the function action",
+            ),
+        ] {
+            let err = serde_json::from_value::<WebviewButtonAction>(json.clone()).unwrap_err();
+            assert_eq!(message, err.to_string(), "{json}");
+        }
+    }
+
+    #[test]
+    fn webview_button_validation_error_names_the_button() {
+        use crate::WebviewEntityOptions;
+
+        for (button, message) in [
+            ("HOME", "Button HOME has a fixed function in the web view"),
+            ("SOURCE", "Unknown button SOURCE"),
+        ] {
+            let options: WebviewEntityOptions = serde_json::from_value(serde_json::json!({
+                "url": "https://example.com/",
+                "buttons": { button: { "action": "pass" } }
+            }))
+            .unwrap();
+            let errors = options.validate().expect_err(button);
+            let error = &errors.field_errors()["buttons"][0];
+            assert_eq!("button", error.code);
+            assert_eq!(Some(message), error.message.as_deref());
+            assert_eq!(Some(&serde_json::json!(button)), error.params.get("button"));
         }
     }
 
