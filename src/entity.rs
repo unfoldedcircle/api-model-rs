@@ -1834,7 +1834,10 @@ pub enum WebviewButtonFunction {
 ///
 /// Serialized as the `KeyboardEvent.key` value of the
 /// [UI Events key values](https://www.w3.org/TR/uievents-key/), which is the variant name, e.g.
-/// `ArrowUp`. The page receives a key event with this `key` and the matching `code`.
+/// `ArrowUp`. The page receives a real key event with this `key`. Its `code` is the
+/// [UI Events code value](https://www.w3.org/TR/uievents-code/) of the corresponding keyboard key
+/// where one exists, otherwise `Unidentified`: for `Exit`, `ChannelUp`, `ChannelDown`,
+/// `MediaPlay`, `MediaPause`, `MediaRecord`, `MediaRewind`, `MediaFastForward` and the color keys.
 #[derive(
     Debug,
     Clone,
