@@ -1772,14 +1772,23 @@ impl TryFrom<WebviewButtonActionObject> for WebviewButtonAction {
 
     fn try_from(value: WebviewButtonActionObject) -> Result<Self, Self::Error> {
         use WebviewButtonActionName as Name;
+        // A field which isn't allowed for the action is reported before a missing field, and the
+        // error always names it.
         match (value.action, value.function, value.key) {
             (Name::Pass, None, None) => Ok(Self::Pass),
             (Name::Function, Some(function), None) => Ok(Self::Function { function }),
             (Name::Key, None, Some(key)) => Ok(Self::Key { key }),
-            (Name::Function, None, _) => Err("missing field `function`"),
-            (Name::Key, _, None) => Err("missing field `key`"),
-            (_, Some(_), _) => Err("field `function` is only allowed for the function action"),
-            (_, _, Some(_)) => Err("field `key` is only allowed for the key action"),
+            (Name::Pass, Some(_), Some(_)) => {
+                Err("fields `function` and `key` are not allowed for the pass action")
+            }
+            (Name::Pass | Name::Key, Some(_), _) => {
+                Err("field `function` is only allowed for the function action")
+            }
+            (Name::Pass | Name::Function, _, Some(_)) => {
+                Err("field `key` is only allowed for the key action")
+            }
+            (Name::Function, None, None) => Err("missing field `function`"),
+            (Name::Key, None, None) => Err("missing field `key`"),
         }
     }
 }
@@ -2581,23 +2590,68 @@ mod tests {
             let res = serde_json::from_value::<WebviewButtonAction>(json.clone());
             assert!(res.is_err(), "{json} must be refused: {res:?}");
         }
+    }
+
+    /// Every combination of the action with and without `function` and `key`: the error names
+    /// the field which isn't allowed for the action, otherwise the missing field.
+    #[test]
+    fn webview_button_action_error_names_the_wrong_field() {
+        use crate::WebviewButtonAction;
+
+        const FUNCTION_NOT_ALLOWED: &str =
+            "field `function` is only allowed for the function action";
+        const KEY_NOT_ALLOWED: &str = "field `key` is only allowed for the key action";
 
         for (json, message) in [
+            (
+                serde_json::json!({ "action": "pass", "function": "close" }),
+                FUNCTION_NOT_ALLOWED,
+            ),
+            (
+                serde_json::json!({ "action": "pass", "key": "Enter" }),
+                KEY_NOT_ALLOWED,
+            ),
+            (
+                serde_json::json!({ "action": "pass", "function": "close", "key": "Enter" }),
+                "fields `function` and `key` are not allowed for the pass action",
+            ),
             (
                 serde_json::json!({ "action": "function" }),
                 "missing field `function`",
             ),
             (
-                serde_json::json!({ "action": "pass", "key": "Enter" }),
-                "field `key` is only allowed for the key action",
+                serde_json::json!({ "action": "function", "key": "Enter" }),
+                KEY_NOT_ALLOWED,
+            ),
+            (
+                serde_json::json!({ "action": "function", "function": "close", "key": "Enter" }),
+                KEY_NOT_ALLOWED,
+            ),
+            (
+                serde_json::json!({ "action": "key" }),
+                "missing field `key`",
+            ),
+            (
+                serde_json::json!({ "action": "key", "function": "close" }),
+                FUNCTION_NOT_ALLOWED,
             ),
             (
                 serde_json::json!({ "action": "key", "key": "Enter", "function": "close" }),
-                "field `function` is only allowed for the function action",
+                FUNCTION_NOT_ALLOWED,
             ),
         ] {
             let err = serde_json::from_value::<WebviewButtonAction>(json.clone()).unwrap_err();
             assert_eq!(message, err.to_string(), "{json}");
+        }
+
+        // the valid combinations
+        for json in [
+            serde_json::json!({ "action": "pass" }),
+            serde_json::json!({ "action": "function", "function": "close" }),
+            serde_json::json!({ "action": "key", "key": "Enter" }),
+        ] {
+            let res = serde_json::from_value::<WebviewButtonAction>(json.clone());
+            assert!(res.is_ok(), "{json}: {res:?}");
         }
     }
 
