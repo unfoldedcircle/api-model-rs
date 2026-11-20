@@ -157,22 +157,20 @@ pub struct DeviceStateMsgData {
 
 /// Payload data of `entity_available` event message in `msg_data` property.
 ///
-/// This is an optional event and not yet implemented in the core.
-#[skip_serializing_none]
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct EntityAvailableMsgData {
-    /// Only required for multi-device integrations.
-    pub device_id: Option<String>,
-    pub entity_type: EntityType,
-    pub entity_id: String,
-    pub features: Option<Vec<String>>,
-    pub name: HashMap<String, String>,
-    pub area: Option<String>,
-}
+/// Optional event to notify the Remote that a new entity is available, or that the definition of
+/// an available entity has changed, e.g. the value range of a number entity or a rotated token of a
+/// web view entity. The payload is the complete entity definition, identical to an item of the
+/// `available_entities` response.
+///
+/// Requires a Remote which supports the `webview` entity type. An older Remote ignores the event.
+pub type EntityAvailableMsgData = AvailableIntgEntity;
 
 /// Payload data of `entity_removed` event message in `msg_data` property.
-///  
-/// This is an optional event and not yet implemented in the core.
+///
+/// Optional event to notify the Remote that an entity was removed and is no longer available. A
+/// configured entity is not deleted, its state becomes `UNAVAILABLE`.
+///
+/// Requires a Remote which supports the `webview` entity type. An older Remote ignores the event.
 #[skip_serializing_none]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct EntityRemovedMsgData {
@@ -445,4 +443,85 @@ pub struct GetMediaQueueMsgData {
     /// Optional paging object to limit returned items.
     #[validate(nested)]
     pub paging: Option<Paging>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{WebviewAuthType, WebviewEntityOptions, WebviewUserAgent};
+
+    #[test]
+    fn entity_available_msg_data_contains_the_entity_definition() {
+        let json = serde_json::json!({
+            "entity_id": "dashboard-energy",
+            "entity_type": "webview",
+            "name": {
+                "en": "Energy dashboard",
+                "de": "Energie-Dashboard"
+            },
+            "icon": "uc:web",
+            "options": {
+                "url": "https://dashboard.example.com/energy?kiosk=1",
+                "auth": {
+                    "type": "bearer",
+                    "token": "eyJhbGciOiJIUzI1NiJ9.rotated.token"
+                },
+                "user_agent": "desktop",
+                "zoom": 70
+            },
+            "attributes": {
+                "state": "ON"
+            }
+        });
+
+        let data: EntityAvailableMsgData =
+            serde_json::from_value(json.clone()).expect("Invalid entity_available msg_data");
+        assert!(data.validate().is_ok(), "{:?}", data.validate());
+        assert_eq!(EntityType::Webview, data.entity_type);
+        assert_eq!(json, serde_json::to_value(&data).unwrap());
+
+        let options: WebviewEntityOptions =
+            serde_json::from_value(serde_json::Value::Object(data.options.unwrap()))
+                .expect("Invalid web view options");
+        assert!(options.validate().is_ok());
+        let auth = options.auth.expect("auth option");
+        assert_eq!(WebviewAuthType::Bearer, auth.auth_type);
+        assert_eq!(
+            Some("eyJhbGciOiJIUzI1NiJ9.rotated.token"),
+            auth.token.as_deref()
+        );
+        assert_eq!(Some(WebviewUserAgent::Desktop), options.user_agent);
+    }
+
+    #[test]
+    fn entity_available_msg_data_without_options() {
+        let json = serde_json::json!({
+            "device_id": "dev1",
+            "entity_type": "button",
+            "entity_id": "button1",
+            "features": ["press"],
+            "name": { "en": "Button" },
+            "area": "Living room"
+        });
+
+        let data: EntityAvailableMsgData =
+            serde_json::from_value(json.clone()).expect("Invalid entity_available msg_data");
+        assert_eq!(EntityType::Button, data.entity_type);
+        assert!(data.options.is_none());
+        assert_eq!(json, serde_json::to_value(&data).unwrap());
+    }
+
+    #[test]
+    fn entity_removed_msg_data_with_webview() {
+        let json = serde_json::json!({
+            "entity_type": "webview",
+            "entity_id": "dashboard-energy"
+        });
+
+        let data: EntityRemovedMsgData =
+            serde_json::from_value(json.clone()).expect("Invalid entity_removed msg_data");
+        assert_eq!(EntityType::Webview, data.entity_type);
+        assert_eq!("dashboard-energy", data.entity_id);
+        assert_eq!(json, serde_json::to_value(&data).unwrap());
+    }
 }

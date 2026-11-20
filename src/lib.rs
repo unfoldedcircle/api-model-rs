@@ -56,3 +56,16 @@ static REGEX_ICON_ID: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"^[a-zA-Z0-9-_\\.:]{1,}$").expect("invalid REGEX_ICON_ID"));
 static REGEX_LANGUAGE_CODE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"^[a-z]{2}(_[A-Z]{2})?$").expect("invalid REGEX_LANGUAGE_CODE"));
+/// HTTP header field name: RFC 9110 token characters.
+static REGEX_HTTP_HEADER_NAME: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^[!#$%&'*+.^_`|~0-9A-Za-z-]+$").expect("invalid REGEX_HTTP_HEADER_NAME")
+});
+/// Web view background color `#RRGGBB`. Empty: the default white `#FFFFFF`.
+static REGEX_WEBVIEW_BACKGROUND_COLOR: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^(#[0-9a-fA-F]{6})?$").expect("invalid REGEX_WEBVIEW_BACKGROUND_COLOR")
+});
+/// SHA-256 certificate fingerprint: 64 hexadecimal digits, optionally separated by `:`.
+static REGEX_WEBVIEW_CERTIFICATE_SHA256: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^[0-9a-fA-F]{2}(:?[0-9a-fA-F]{2}){31}$")
+        .expect("invalid REGEX_WEBVIEW_CERTIFICATE_SHA256")
+});
