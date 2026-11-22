@@ -1412,6 +1412,9 @@ pub enum WebviewOptionField {
     /// Function of single physical buttons in the fullscreen web view. See
     /// [WebviewButtonAction]. Can be overridden by the user.
     Buttons,
+    /// Device state API for the pages of the web view: battery state, display state, power source,
+    /// power profile and standby events. Default: false. Can be overridden by the user.
+    DeviceApi,
 }
 
 /// Web view entity attributes.
@@ -1473,6 +1476,12 @@ pub struct WebviewEntityOptions {
     /// of the Remote, which define the default actions.
     #[validate(custom(function = "validate_webview_buttons"))]
     pub buttons: Option<BTreeMap<String, WebviewButtonAction>>,
+    /// Enable the device state API for all top-level pages of the web view: the battery state with
+    /// `navigator.getBattery()`, the `freeze` and `resume` events on `document`, and
+    /// `window.deviceHost` with the display state, the power source and the power profile. See
+    /// [device state for web pages](https://github.com/unfoldedcircle/core-api/blob/main/doc/entities/entity_webview.md#device-state-for-web-pages).
+    /// Default: false.
+    pub device_api: Option<bool>,
 }
 
 impl WebviewEntityOptions {
@@ -1490,6 +1499,7 @@ impl WebviewEntityOptions {
             show_navigation: None,
             reload_interval: None,
             buttons: None,
+            device_api: None,
         }
     }
 }
@@ -2124,9 +2134,14 @@ mod tests {
                 "background_color",
                 "show_navigation",
                 "reload_interval",
-                "buttons"
+                "buttons",
+                "device_api"
             ],
             WebviewOptionField::VARIANTS
+        );
+        assert_eq!(
+            serde_json::json!("device_api"),
+            serde_json::to_value(WebviewOptionField::DeviceApi).unwrap()
         );
         assert_eq!(
             serde_json::json!("reload_interval"),
@@ -2255,7 +2270,8 @@ mod tests {
                     "VOLUME_UP": { "action": "pass" },
                     "CHANNEL_UP": { "action": "key", "key": "ChannelUp" },
                     "RED": { "action": "key", "key": "ColorF0Red" }
-                }
+                },
+                "device_api": true
             }),
         ];
 
@@ -2673,6 +2689,29 @@ mod tests {
             assert_eq!("button", error.code);
             assert_eq!(Some(message), error.message.as_deref());
             assert_eq!(Some(&serde_json::json!(button)), error.params.get("button"));
+        }
+    }
+
+    #[test]
+    fn webview_device_api_option() {
+        use crate::WebviewEntityOptions;
+
+        let options = WebviewEntityOptions::new("https://example.com/");
+        assert_eq!(None, options.device_api);
+
+        for value in [true, false] {
+            let json = serde_json::json!({ "url": "https://example.com/", "device_api": value });
+            let options: WebviewEntityOptions = serde_json::from_value(json.clone()).unwrap();
+            assert_eq!(Some(value), options.device_api);
+            assert!(options.validate().is_ok());
+            assert_eq!(json, serde_json::to_value(&options).unwrap());
+        }
+
+        for value in [serde_json::json!("true"), serde_json::json!(1)] {
+            let res = serde_json::from_value::<WebviewEntityOptions>(
+                serde_json::json!({ "url": "https://example.com/", "device_api": value }),
+            );
+            assert!(res.is_err(), "device_api {value} should fail: {res:?}");
         }
     }
 
