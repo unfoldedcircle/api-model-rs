@@ -1377,8 +1377,8 @@ pub enum WebviewCommand {
     Reload,
     /// Clear the HTTP cache of all web views and reload the shown page.
     ClearCache,
-    /// Clear all website data of all web views and the credentials entered in a login dialog,
-    /// then reload the shown page.
+    /// Clear all website data of all web views, then reload the shown page. Credentials entered in
+    /// a login dialog are kept until the user interface restarts.
     ClearData,
 }
 
